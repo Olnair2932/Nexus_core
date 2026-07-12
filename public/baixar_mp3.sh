@@ -1,31 +1,72 @@
-#!/bin/bash
-DIR="$(cd "$(dirname "$0")" && pwd)"
-BIN_DIR="$(cd "$DIR/../bin" && pwd)"
-export PATH="$BIN_DIR:$PATH"
+#!/usr/bin/env bash
 
-BUSCA="${1:-musica}"
-# Limpa a busca e remove termos de download
-BUSCA_L=$(echo "$BUSCA" | sed 's/^[Bb]aixar //i' | sed 's/[^a-zA-Z0-9 ]//g' | xargs)
+set -Eeuo pipefail
 
-echo "📥 Buscando especificamente por: $BUSCA_L"
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$(cd "$DIR/.." && pwd)"
+BIN="$ROOT/bin"
 
-# Adicionamos "oficial" ou "original" na busca interna para evitar remixes de funk
-# Usamos --match-title para tentar filtrar lixo (opcional)
-yt-dlp \
-    -x --audio-format mp3 --audio-quality 0 \
-    --no-check-certificate --restrict-filenames \
-    --ffmpeg-location "$BIN_DIR/ffmpeg" \
-    --default-search "scsearch1" \
-    --output "$DIR/%(title)s.%(ext)s" \
-    "scsearch1:$BUSCA_L original audio"
+YTDLP="$BIN/yt-dlp"
+FFMPEG="$BIN/ffmpeg"
 
-# VERIFICAÇÃO REAL: Só aceita se o arquivo foi criado nos últimos 60 segundos
-# Isso impede de tocar a música errada se o download falhar
-ARQUIVO=$(find "$DIR" -maxdepth 1 -name "*.mp3" -mmin -1 | head -n 1)
+export PATH="$BIN:$PATH"
 
-if [ -n "$ARQUIVO" ]; then
-    echo "OK|$(basename "$ARQUIVO")"
-else
-    echo "❌ Erro: Não foi possível encontrar a versão original desta música."
+if [ ! -x "$YTDLP" ]; then
+    echo "ERRO|yt-dlp não encontrado."
     exit 1
 fi
+
+if [ ! -x "$FFMPEG" ]; then
+    echo "ERRO|ffmpeg não encontrado."
+    exit 1
+fi
+
+BUSCA="${*:-}"
+
+if [ -z "$BUSCA" ]; then
+    echo "ERRO|Nenhuma música informada."
+    exit 1
+fi
+
+# Remove apenas o comando inicial "baixar"
+BUSCA="$(echo "$BUSCA" | sed -E 's/^[Bb]aixar[[:space:]]+//' | xargs)"
+
+echo "🔎 Procurando no YouTube: $BUSCA"
+
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+
+"$YTDLP" \
+    "ytsearch1:${BUSCA} official audio" \
+    --no-playlist \
+    --extract-audio \
+    --audio-format mp3 \
+    --audio-quality 0 \
+    --ffmpeg-location "$BIN" \
+    --embed-metadata \
+    --embed-thumbnail \
+    --add-metadata \
+    --no-overwrites \
+    --newline \
+    --ignore-errors \
+    --output "$TMP/%(title)s.%(ext)s"
+
+ARQUIVO="$(find "$TMP" -type f -name '*.mp3' | head -n1)"
+
+if [ -z "$ARQUIVO" ]; then
+    echo "ERRO|Nenhum resultado encontrado."
+    exit 1
+fi
+
+NOME="$(basename "$ARQUIVO")"
+DESTINO="$DIR/$NOME"
+
+if [ -f "$DESTINO" ]; then
+    echo "OK|$NOME"
+    exit 0
+fi
+
+mv "$ARQUIVO" "$DESTINO"
+
+echo "OK|$NOME"
+exit 0
