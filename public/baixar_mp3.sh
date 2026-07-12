@@ -1,72 +1,55 @@
 #!/usr/bin/env bash
-
 set -Eeuo pipefail
 
+# 1. Configuração de Caminhos
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$DIR/.." && pwd)"
 BIN="$ROOT/bin"
 
-YTDLP="$BIN/yt-dlp"
-FFMPEG="$BIN/ffmpeg"
+# Tenta usar o binário local do Build, senão o global
+export PATH="$BIN:/usr/local/bin:/usr/bin:$PATH"
 
-export PATH="$BIN:$PATH"
+YTDLP=$(command -v yt-dlp || echo "$BIN/yt-dlp")
 
-if [ ! -x "$YTDLP" ]; then
-    echo "ERRO|yt-dlp não encontrado."
-    exit 1
-fi
-
-if [ ! -x "$FFMPEG" ]; then
-    echo "ERRO|ffmpeg não encontrado."
-    exit 1
-fi
+if [ ! -x "$YTDLP" ]; then echo "ERRO|yt-dlp não encontrado."; exit 1; fi
 
 BUSCA="${*:-}"
+if [ -z "$BUSCA" ]; then echo "ERRO|Nenhuma música informada."; exit 1; fi
 
-if [ -z "$BUSCA" ]; then
-    echo "ERRO|Nenhuma música informada."
-    exit 1
-fi
+# 2. Limpeza da busca e adição de filtro anti-funk/remix
+# Adicionamos "original audio" para garantir a versão oficial
+BUSCA="$(echo "$BUSCA" | sed -E 's/^[Bb]aixar[[:space:]]+//' | xargs) original audio"
 
-# Remove apenas o comando inicial "baixar"
-BUSCA="$(echo "$BUSCA" | sed -E 's/^[Bb]aixar[[:space:]]+//' | xargs)"
-
-echo "🔎 Procurando no YouTube: $BUSCA"
+echo "📥 Buscando mídia segura: $BUSCA" >&2
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
+# 3. DOWNLOAD (Uso do scsearch para evitar bloqueios de IP no Render)
 "$YTDLP" \
-    "ytsearch1:${BUSCA} official audio" \
+    "scsearch1:${BUSCA}" \
     --no-playlist \
     --extract-audio \
     --audio-format mp3 \
     --audio-quality 0 \
-    --ffmpeg-location "$BIN" \
-    --embed-metadata \
-    --embed-thumbnail \
-    --add-metadata \
+    --restrict-filenames \
     --no-overwrites \
-    --newline \
-    --ignore-errors \
-    --output "$TMP/%(title)s.%(ext)s"
+    --no-check-certificate \
+    --output "$TMP/%(title)s.%(ext)s" > /dev/null 2>&1
 
 ARQUIVO="$(find "$TMP" -type f -name '*.mp3' | head -n1)"
 
 if [ -z "$ARQUIVO" ]; then
-    echo "ERRO|Nenhum resultado encontrado."
+    echo "ERRO|Música oficial não localizada no SoundCloud."
     exit 1
 fi
 
 NOME="$(basename "$ARQUIVO")"
 DESTINO="$DIR/$NOME"
 
-if [ -f "$DESTINO" ]; then
-    echo "OK|$NOME"
-    exit 0
-fi
-
+# 4. Finalização
 mv "$ARQUIVO" "$DESTINO"
+chmod 644 "$DESTINO"
 
+# Retorna APENAS o OK para o Node.js processar o player
 echo "OK|$NOME"
-exit 0
