@@ -5,132 +5,177 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>NEXUS | COMMAND CENTER</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    
+    <!-- FIREBASE SDKS -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
     <style>
         :root { --bg: #05070a; --accent: #00f2ff; --panel: rgba(16, 20, 28, 0.9); --text: #c4d1d9; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Rajdhani', sans-serif; }
         body { background: var(--bg); color: var(--text); height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
         
-        header { padding: 15px; text-align: center; border-bottom: 2px solid var(--accent); box-shadow: 0 0 15px rgba(0, 242, 255, 0.2); background: rgba(0,0,0,0.8); }
-        header h1 { font-family: 'Orbitron'; font-size: 14px; letter-spacing: 3px; color: var(--accent); text-transform: uppercase; }
+        header { padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--accent); background: rgba(0,0,0,0.8); }
+        header h1 { font-family: 'Orbitron'; font-size: 14px; color: var(--accent); text-transform: uppercase; }
+        
+        .user-profile { display: flex; align-items: center; gap: 10px; }
+        #user-img { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--accent); display: none; }
+        .btn-login { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 5px 12px; border-radius: 15px; cursor: pointer; font-size: 12px; }
 
         main { flex: 1; display: flex; flex-direction: column; padding: 10px; gap: 10px; overflow: hidden; }
 
-        /* BIBLIOTECA */
-        .library-box { background: var(--panel); border: 1px solid #1a202c; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; height: 160px; }
-        .library-title { font-family: 'Orbitron'; font-size: 10px; color: var(--accent); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .library-box { background: var(--panel); border: 1px solid #1a202c; border-radius: 12px; padding: 12px; height: 160px; display: flex; flex-direction: column; }
+        .library-title { font-family: 'Orbitron'; font-size: 10px; color: var(--accent); margin-bottom: 10px; display: flex; justify-content: space-between; }
         #file-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
-        .file-item { background: rgba(0,0,0,0.4); padding: 10px; border-radius: 6px; font-size: 13px; cursor: pointer; border-left: 3px solid transparent; transition: 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .file-item:hover { border-left: 3px solid var(--accent); background: rgba(0, 242, 255, 0.1); }
+        
+        .file-item { background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 6px; font-size: 13px; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid transparent; }
+        .file-item:hover { border-left-color: var(--accent); }
+        .btn-add-playlist { color: var(--accent); cursor: pointer; font-size: 18px; padding: 0 5px; }
 
-        /* CHAT */
-        .chat-zone { flex: 1; background: var(--panel); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
+        .chat-zone { flex: 1; background: var(--panel); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; }
         #history { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
-        .bubble { max-width: 85%; padding: 12px; border-radius: 12px; font-size: 15px; line-height: 1.4; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        .user { align-self: flex-end; background: #2563eb; color: white; border-bottom-right-radius: 2px; }
-        .ai { align-self: flex-start; background: #161b2c; border-left: 4px solid var(--accent); border-bottom-left-radius: 2px; }
+        .bubble { max-width: 85%; padding: 12px; border-radius: 12px; font-size: 15px; line-height: 1.4; }
+        .user { align-self: flex-end; background: #2563eb; }
+        .ai { align-self: flex-start; background: #161b2c; border-left: 3px solid var(--accent); }
 
-        /* PLAYER */
-        .nexus-player { background: #000; padding: 12px; border-top: 1px solid var(--accent); }
-        #track-name { font-family: 'Orbitron'; font-size: 9px; color: var(--accent); text-align: center; margin-bottom: 8px; letter-spacing: 1px; text-transform: uppercase; }
-        audio { width: 100%; height: 35px; filter: invert(1) hue-rotate(180deg) brightness(1.5); }
+        .nexus-player { background: #000; padding: 10px; border-top: 1px solid var(--accent); }
+        #track-name { font-family: 'Orbitron'; font-size: 9px; color: var(--accent); text-align: center; margin-bottom: 5px; }
+        audio { width: 100%; height: 30px; }
 
-        /* INPUT */
-        footer { padding: 12px; background: #0d1117; display: flex; gap: 10px; align-items: center; }
-        input { flex: 1; background: #1a202c; border: 1px solid #2d3748; border-radius: 25px; padding: 12px 20px; color: white; outline: none; font-size: 16px; }
-        button { background: var(--accent); border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(0, 242, 255, 0.4); }
-        button svg { fill: #000; width: 20px; height: 20px; }
+        footer { padding: 10px; background: #0d1117; display: flex; gap: 10px; }
+        input { flex: 1; background: #1a202c; border: 1px solid #2d3748; border-radius: 20px; padding: 10px 15px; color: white; outline: none; }
+        button#send-btn { background: var(--accent); border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; }
     </style>
 </head>
 <body>
-    <header><h1>NEXUS SENTINELA CORE</h1></header>
+    <header>
+        <h1>NEXUS CORE</h1>
+        <div class="user-profile">
+            <img id="user-img" src="" alt="user">
+            <button id="auth-btn" class="btn-login" onclick="handleAuth()">LOGIN GOOGLE</button>
+        </div>
+    </header>
     
     <main>
         <div class="library-box">
-            <div class="library-title">
-                <span>📂 BIBLIOTECA NO RENDER</span>
-                <span id="count" style="background: var(--accent); color: #000; padding: 2px 8px; border-radius: 10px;">0</span>
-            </div>
-            <div id="file-list">Sincronizando biblioteca...</div>
+            <div class="library-title"><span>📂 BIBLIOTECA RENDER</span><span id="count">0</span></div>
+            <div id="file-list">Sincronizando...</div>
         </div>
 
         <div class="chat-zone">
-            <div id="history">
-                <div class="bubble ai">Núcleo Nexus Master carregado. Aguardando comando.</div>
-            </div>
+            <div id="history"><div class="bubble ai">Núcleo Master operacional.</div></div>
         </div>
     </main>
 
     <div class="nexus-player">
-        <div id="track-name">SISTEMA EM STANDBY</div>
+        <div id="track-name">STANDBY</div>
         <audio id="nexusPlayer" controls></audio>
     </div>
 
     <footer>
-        <input id="in" type="text" placeholder="Digite seu comando..." autocomplete="off">
-        <button onclick="send()">
-            <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-        </button>
+        <input id="in" type="text" placeholder="Comando..." autocomplete="off">
+        <button id="send-btn" onclick="send()">➤</button>
     </footer>
 
     <script>
-        const history = document.getElementById('history');
-        const player = document.getElementById('nexusPlayer');
-        const trackName = document.getElementById('track-name');
-        const fileList = document.getElementById('file-list');
-        const inputField = document.getElementById('in');
+        // CONFIGURAÇÃO OFICIAL ENVIADA POR VOCÊ
+        const firebaseConfig = {
+          apiKey: "AIzaSyCTX4Bgjd7T0WV_KkHnJm7Tgk3CodyO6dM",
+          authDomain: "nexus-core-42ebb.firebaseapp.com",
+          databaseURL: "https://nexus-core-42ebb-default-rtdb.firebaseio.com",
+          projectId: "nexus-core-42ebb",
+          storageBucket: "nexus-core-42ebb.firebasestorage.app",
+          messagingSenderId: "733318174781",
+          appId: "1:733318174781:web:979c38a62c1c5620b17254"
+        };
 
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+        let user = null;
+
+        // AUTH HANDLER
+        async function handleAuth() {
+            if (!user) {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                await auth.signInWithPopup(provider);
+            } else {
+                await auth.signOut();
+                location.reload();
+            }
+        }
+
+        auth.onAuthStateChanged(u => {
+            user = u;
+            const btn = document.getElementById('auth-btn');
+            const img = document.getElementById('user-img');
+            if (u) {
+                btn.innerText = "LOGOUT";
+                img.src = u.photoURL; img.style.display = "block";
+                addMsg(`Identificado: ${u.displayName}. Playlist sincronizada.`, 'ai');
+            }
+        });
+
+        // BIBLIOTECA
         async function loadFiles() {
             try {
                 const r = await fetch('/api/arquivos');
                 const files = await r.json();
                 document.getElementById('count').innerText = files.length;
-                fileList.innerHTML = files.length === 0 ? 
-                    "<div style='font-size:12px; opacity:0.5; text-align:center;'>Nenhum arquivo encontrado.</div>" :
-                    files.map(f => `<div class="file-item" onclick="copyToInput('${f}')">${f}</div>`).join('');
-            } catch { fileList.innerHTML = "Erro ao carregar arquivos."; }
+                document.getElementById('file-list').innerHTML = files.map(f => `
+                    <div class="file-item">
+                        <span onclick="copyToInput('${f}')">${f}</span>
+                        <span class="btn-add-playlist" onclick="addToPlaylist('${f}')">★</span>
+                    </div>
+                `).join('');
+            } catch (e) {}
         }
 
         function copyToInput(name) {
-            inputField.value = `tocar ${name}`;
-            inputField.focus();
+            document.getElementById('in').value = `tocar ${name}`;
+            document.getElementById('in').focus();
+        }
+
+        async function addToPlaylist(name) {
+            if (!user) return addMsg("Faça login para salvar favoritos!", 'ai');
+            await db.ref(`playlists/${user.uid}`).push({ name, date: Date.now() });
+            addMsg(`⭐ ${name} salva nos seus favoritos!`, 'ai');
         }
 
         async function send() {
-            const val = inputField.value.trim();
+            const input = document.getElementById('in');
+            const val = input.value.trim();
             if(!val) return;
-            addMsg(val, 'user');
-            inputField.value = "";
+            addMsg(val, 'user'); input.value = "";
 
             try {
                 const response = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ texto: val })
                 });
                 const data = await response.json();
                 addMsg(data.nexus, 'ai');
-
                 if(data.url) {
-                    trackName.innerText = "PLAYING: " + decodeURIComponent(data.url).split('/').pop();
-                    player.src = data.url;
-                    player.play();
+                    document.getElementById('track-name').innerText = "PLAYING: " + decodeURIComponent(data.url).split('/').pop();
+                    const p = document.getElementById('nexusPlayer');
+                    p.src = data.url; p.play();
                 }
-                setTimeout(loadFiles, 3000); 
-            } catch (err) { addMsg("❌ Falha na conexão com o Core.", 'ai'); }
+                setTimeout(loadFiles, 3000);
+            } catch (e) { addMsg("Erro de conexão.", 'ai'); }
         }
 
         function addMsg(text, type) {
             const div = document.createElement('div');
             div.className = `bubble ${type}`;
             div.innerText = text;
-            history.appendChild(div);
-            history.scrollTop = history.scrollHeight;
+            document.getElementById('history').appendChild(div);
+            document.getElementById('history').scrollTop = 99999;
         }
 
-        inputField.onkeydown = (e) => { if(e.key === 'Enter') send(); };
-        setInterval(loadFiles, 15000);
+        document.getElementById('in').onkeydown = (e) => { if(e.key === 'Enter') send(); };
         loadFiles();
+        setInterval(loadFiles, 20000);
     </script>
 </body>
 </html>
