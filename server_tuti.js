@@ -47,7 +47,7 @@ function aprender(user, ai, shell) {
 async function interpretar(texto) {
     const contexto = obterContexto();
     const biblioteca = obterBiblioteca();
-    const modelo = "gemini-2.5-flash"; // Modelo atualizado conforme pedido
+    const modelo = "gemini-3.1-flash-lite"; // Modelo atualizado conforme pedido
 
     const prompt = `Você é o NEXUS SENTINELA, um sistema de comando de áudio avançado.
     
