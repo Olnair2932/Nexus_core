@@ -30,11 +30,10 @@ BUSCA_REFRESH=""
 
 if [ -n "${GEMINI_API_KEY:-}" ]; then
 
-PROMPT="Identifique corretamente a música pesquisada.
+PROMPT="Identifique a música pesquisada.
 Retorne somente artista e nome da música.
-Priorize o título oficial da faixa.
 Não adicione explicações.
-Não adicione palavras como remix, live, set, versão ou conteúdo adicional.
+Não adicione palavras como remix, live, set ou official.
 
 Pesquisa:
 $BUSCA_ORIGINAL"
