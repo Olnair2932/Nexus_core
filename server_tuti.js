@@ -6,6 +6,10 @@ const fs = require("fs");
 const app = express();
 const PORT = process.env.PORT || 10000;       const BASE_DIR = path.join(__dirname, "public");
 const BRAIN_LOG = path.join(BASE_DIR, "nexus_brain.log");
+
+if (!fs.existsSync(BASE_DIR)) {
+    fs.mkdirSync(BASE_DIR, { recursive: true });
+}
                                               app.use(cors()); app.use(express.json()); app.use(express.static(BASE_DIR));                                                              function obterBiblioteca() {
     try {                                             return fs.readdirSync(BASE_DIR).filter(f => /\.(mp3|webm|m4a)$/i.test(f)).join(", ");                                                 } catch (e) { return "Vazia"; }           }                                                                                           function obterContexto() {                        try {                                             if (!fs.existsSync(BRAIN_LOG)) return "Nenhum aprendizado.";                                return fs.readFileSync(BRAIN_LOG, "utf8").trim().split("\n").slice(-10).join("\n");     } catch (e) { return "Erro memória."; }   }
                                               async function interpretar(texto) {               const bib = obterBiblioteca();
