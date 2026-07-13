@@ -1,6 +1,10 @@
 #!/bin/bash
 set -Eeuo pipefail
 
+# ==================================
+# NEXUS MASTER - DOWNLOADER MP3
+# ==================================
+
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$DIR/.." && pwd)"
 BIN="$ROOT/bin"
@@ -10,6 +14,10 @@ export PATH="$BIN:/usr/local/bin:/usr/bin:$PATH"
 YTDLP="$(command -v yt-dlp || echo "$BIN/yt-dlp")"
 FFMPEG="$(command -v ffmpeg || echo "$BIN/ffmpeg")"
 
+
+# ==================================
+# RECEBE COMANDO
+# ==================================
 
 BUSCA_ORIGINAL="${*:-}"
 
@@ -22,12 +30,24 @@ fi
 BUSCA_FINAL="$BUSCA_ORIGINAL"
 
 
+
+# ==================================
+# GEMINI - ORGANIZA BUSCA
+# ==================================
+
 if [ -n "${GEMINI_API_KEY:-}" ]; then
 
-PROMPT="Identifique a música pesquisada.
-Retorne somente artista e nome da música.
-Não adicione explicações.
-Não adicione remix, live, set ou official.
+PROMPT="Identifique a música.
+
+Retorne somente:
+Artista - Nome da música
+
+Não use:
+remix
+live
+official
+set
+explicações
 
 Pesquisa:
 $BUSCA_ORIGINAL"
@@ -37,14 +57,12 @@ PAYLOAD=$(python3 -c '
 import json
 import sys
 
-texto = sys.argv[1]
-
 print(json.dumps({
     "contents":[
         {
             "parts":[
                 {
-                    "text": texto
+                    "text":sys.argv[1]
                 }
             ]
         }
@@ -67,12 +85,12 @@ RESPOSTA=$(curl -s \
 
 
 SUGESTAO=$(echo "$RESPOSTA" | python3 -c '
-import sys,json
+import json,sys
 
 try:
-    data=json.load(sys.stdin)
+    r=json.load(sys.stdin)
     print(
-        data["candidates"][0]
+        r["candidates"][0]
         ["content"]
         ["parts"][0]
         ["text"]
@@ -93,6 +111,10 @@ fi
 
 
 
+# ==================================
+# LIMPEZA
+# ==================================
+
 BUSCA_FINAL=$(echo "$BUSCA_FINAL" |
 sed -E 's/^[Bb]aixar[[:space:]]+//' |
 sed -E 's/[Mm][Pp]3//g' |
@@ -104,7 +126,11 @@ echo "📥 Buscando: $BUSCA_FINAL" >&2
 
 
 
-TMP=$(mktemp -d)
+# ==================================
+# DOWNLOAD
+# ==================================
+
+TMP="$(mktemp -d)"
 
 trap 'rm -rf "$TMP"' EXIT
 
@@ -115,31 +141,67 @@ trap 'rm -rf "$TMP"' EXIT
 --no-playlist \
 --extract-audio \
 --audio-format mp3 \
---audio-quality 0 \
+--audio-quality 192K \
 --embed-metadata \
 --restrict-filenames \
 --no-check-certificate \
 --ffmpeg-location "$FFMPEG" \
---output "$TMP/%(title)s.%(ext)s"
+-o "$TMP/%(title)s.%(ext)s"
 
 
 
-ARQUIVO=$(find "$TMP" -type f -name "*.mp3" | head -n1)
+# ==================================
+# LOCALIZA ARQUIVO
+# ==================================
+
+ARQUIVO=$(find "$TMP" -type f | grep -E "\.(mp3|webm|m4a|opus)$" | head -n1 || true)
+
 
 
 if [ -z "$ARQUIVO" ]; then
-    echo "ERRO|Música não encontrada"
+    echo "ERRO|Arquivo não encontrado após download"
     exit 1
 fi
 
 
+
+# ==================================
+# CONVERTE PARA MP3
+# ==================================
+
+EXT="${ARQUIVO##*.}"
+
+
+if [ "$EXT" != "mp3" ]; then
+
+    CONVERTIDO="$TMP/audio_convertido.mp3"
+
+    "$FFMPEG" \
+    -y \
+    -i "$ARQUIVO" \
+    -vn \
+    -codec:a libmp3lame \
+    -q:a 2 \
+    "$CONVERTIDO"
+
+    ARQUIVO="$CONVERTIDO"
+
+fi
+
+
+
+# ==================================
+# MOVE PARA BIBLIOTECA
+# ==================================
 
 NOME=$(basename "$ARQUIVO")
 
 
 mv "$ARQUIVO" "$DIR/$NOME"
 
+
 chmod 644 "$DIR/$NOME"
+
 
 
 echo "OK|$NOME"
