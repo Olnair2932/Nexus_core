@@ -363,8 +363,18 @@ retorno.nexus =
 
 if(intent.acao==="baixar_musica"){
 
-retorno.nexus =
-"📥 Baixando para biblioteca local.";
+    if(execucao.stdout.includes("OK|")){
+
+        const arquivo = execucao.stdout.split("OK|")[1].trim();
+
+        retorno.nexus = "✅ Baixado para biblioteca: " + arquivo;
+        retorno.url = "/" + encodeURIComponent(arquivo);
+
+    } else {
+
+        retorno.nexus = "❌ Falha no download: " + (execucao.stdout || execucao.stderr);
+
+    }
 
 }
 
