@@ -1,5 +1,4 @@
 require("dotenv").config();
-
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
@@ -8,464 +7,138 @@ const path = require("path");
 const fs = require("fs");
 
 const app = express();
-
 const PORT = process.env.PORT || 10000;
 
+// Configuração de Caminhos
 const BASE_DIR = path.join(__dirname, "public");
+const BIN_DIR = path.join(__dirname, "bin");
 const BRAIN_LOG = path.join(BASE_DIR, "nexus_brain.log");
 
-
-// cria public se não existir
-if (!fs.existsSync(BASE_DIR)) {
-    fs.mkdirSync(BASE_DIR, { recursive: true });
-}
-
-
+// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.static(BASE_DIR));
 
+// Garante que as pastas e arquivos básicos existam
+if (!fs.existsSync(BASE_DIR)) fs.mkdirSync(BASE_DIR, { recursive: true });
+if (!fs.existsSync(BRAIN_LOG)) fs.writeFileSync(BRAIN_LOG, "");
 
-// ===============================
-// BIBLIOTECA
-// ===============================
+// --- FUNÇÕES DE SUPORTE ---
 
 function obterBiblioteca() {
-
     try {
-
         return fs.readdirSync(BASE_DIR)
-        .filter(file =>
-            /\.(mp3|webm|m4a|ogg)$/i.test(file)
-        )
-        .join(", ") || "Vazia";
-
-    } catch {
-
-        return "Vazia";
-
-    }
-
+            .filter(f => /\.(mp3|webm|m4a)$/i.test(f))
+            .join(", ") || "Vazia";
+    } catch (e) { return "Erro ao ler biblioteca."; }
 }
-
-
-// ===============================
-// MEMÓRIA
-// ===============================
 
 function obterContexto() {
-
     try {
-
-        if (!fs.existsSync(BRAIN_LOG))
-            return "Nenhum aprendizado.";
-
-        return fs.readFileSync(
-            BRAIN_LOG,
-            "utf8"
-        )
-        .split("\n")
-        .slice(-20)
-        .join("\n");
-
-    } catch {
-
-        return "Erro memória.";
-
-    }
-
+        const logs = fs.readFileSync(BRAIN_LOG, "utf8").trim().split("\n");
+        return logs.slice(-10).join("\n");
+    } catch (e) { return "Sem memória recente."; }
 }
-
-
-function salvarMemoria(texto) {
-
-    fs.appendFileSync(
-        BRAIN_LOG,
-        `[${new Date().toLocaleString()}] ${texto}\n`
-    );
-
-}
-
-
-// ===============================
-// GEMINI
-// ===============================
 
 async function interpretar(texto) {
-
-
-const prompt = `
-
-Você é o NEXUS.
-
-Biblioteca:
-${obterBiblioteca()}
-
-Histórico:
-${obterContexto()}
-
-
-REGRAS:
-
-Se música existir:
-acao="tocar_musica"
-
-Se música não existir:
-acao="baixar_musica"
-
-Nunca usar SoundCloud.
-
-Responder somente JSON:
-
-{
-"acao":"",
-"params":"",
-"resposta":"",
-"reflexao":""
-}
-
-
-Usuário:
-${texto}
-
-`;
-
-
-
-try {
-
-
-const resposta = await axios.post(
-
-`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${process.env.GEMINI_API_KEY}`,
-
-{
-contents:[
-{
-parts:[
-{
-text:prompt
-}
-]
-}
-]
-},
-
-{
-timeout:20000
-}
-
-);
-
-
-
-let textoIA =
-resposta.data
-.candidates[0]
-.content
-.parts[0]
-.text
-.replace(/```json/g,"")
-.replace(/```/g,"")
-.trim();
-
-
-
-return {
-
-success:true,
-
-data:JSON.parse(textoIA)
-
-};
-
-
-
-} catch(e) {
-
-
-console.log(
-"Erro Gemini:",
-e.message
-);
-
-
-return {
-
-success:false
-
-};
-
-
-}
-
-
-}
-
-
-
-// ===============================
-// EXECUTAR SCRIPT
-// ===============================
-
-function executar(script,parametro){
-
-
-return new Promise(resolve=>{
-
-
-const arquivo =
-path.join(BASE_DIR,script);
-
-
-const nome =
-String(parametro || "")
-.replace(/"/g,"")
-.trim();
-
-
-
-exec(
-
-`bash "${arquivo}" "${nome}"`,
-
-{
-timeout:120000
-},
-
-(err,stdout,stderr)=>{
-
-
-resolve({
-
-ok:!err,
-
-stdout:stdout || "",
-
-stderr:stderr || ""
-
-});
-
-
-}
-
-);
-
-
-});
-
-
-}
-
-
-
-// ===============================
-// CHAT
-// ===============================
-
-app.post("/api/chat", async(req,res)=>{
-
-
-const texto =
-req.body.texto || "";
-
-
-
-const resultado =
-await interpretar(texto);
-
-
-
-const intent =
-resultado.success
-?
-resultado.data
-:
-{
-acao:"baixar_musica",
-params:texto,
-resposta:"Executando protocolo local."
-};
-
-
-
-let script;
-
-
-
-if(intent.acao==="tocar_musica"){
-
-script="tocar_mp3.sh";
-
-
-}else{
-
-
-script="baixar_mp3.sh";
-
-
-}
-
-
-
-const execucao =
-await executar(
-script,
-intent.params
-);
-
-
-
-let retorno = {
-
-
-nexus:
-intent.resposta ||
-"Processado.",
-
-
-log:
-execucao.stdout ||
-execucao.stderr || "",
-
-
-reflexao:
-intent.reflexao || ""
-
-};
-
-
-
-
-
-if(execucao.stdout.includes("OK|")){
-
-
-const arquivo =
-execucao.stdout
-.split("OK|")[1]
-.trim();
-
-
-
-retorno.url =
-"/" + encodeURIComponent(arquivo);
-
-
-
-retorno.nexus =
-"🎵 Tocando: " + arquivo;
-
-
-}
-
-
-
-if(intent.acao==="baixar_musica"){
-
-    if(execucao.stdout.includes("OK|")){
-
-        const arquivo = execucao.stdout.split("OK|")[1].trim();
-
-        retorno.nexus = "✅ Baixado para biblioteca: " + arquivo;
-        retorno.url = "/" + encodeURIComponent(arquivo);
-
-    } else {
-
-        retorno.nexus = "❌ Falha no download: " + (execucao.stdout || execucao.stderr);
-
+    const bib = obterBiblioteca();
+    const ctx = obterContexto();
+    
+    // Prompt refinado para o Nexus Sentinela
+    const prompt = `Você é o NEXUS SENTINELA, IA de elite. Analise: "${texto}"
+    BIBLIOTECA ATUAL: [${bib}]
+    HISTÓRICO: ${ctx}
+    
+    REGRAS:
+    1. Se a música já está na BIBLIOTECA, use acao="tocar_musica".
+    2. Se não está, use acao="baixar_musica".
+    3. params deve ser o nome exato do arquivo (se tocar) ou nome da música (se baixar).
+    Responda apenas JSON puro: {"acao":"baixar_musica|tocar_musica", "params":"", "resposta":"frase curta", "reflexao":"por que escolheu isso"}`;
+
+    try {
+        const res = await axios.post(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+            { contents: [{ parts: [{ text: prompt }] }] },
+            { timeout: 15000 }
+        );
+
+        let raw = res.data.candidates[0].content.parts[0].text.replace(/```json|```/g, "").trim();
+        return JSON.parse(raw);
+    } catch (e) {
+        console.error("Erro na IA:", e.message);
+        // Fallback caso a IA falhe
+        return { 
+            acao: texto.toLowerCase().includes("tocar") ? "tocar_musica" : "baixar_musica", 
+            params: texto.replace(/tocar|baixar/i, "").trim(), 
+            resposta: "⚙️ Ativando protocolos de emergência." 
+        };
     }
-
 }
 
+// --- ROTAS DA API ---
 
-
-salvarMemoria(
-`USER:${texto} | ${retorno.nexus}`
-);
-
-
-
-res.json(retorno);
-
-
-
+// Listar arquivos para a aba "BIBLIOTECA"
+app.get("/api/arquivos", (req, res) => {
+    fs.readdir(BASE_DIR, (err, files) => {
+        if (err) return res.status(500).json([]);
+        const musicas = files.filter(f => /\.(mp3|webm|m4a)$/i.test(f)).sort();
+        res.json(musicas);
+    });
 });
 
+// Chat e Processamento de Comandos
+app.post("/api/chat", async (req, res) => {
+    const texto = req.body.texto || "";
+    const intent = await interpretar(texto);
+    
+    // Prepara o ambiente para os binários locais (yt-dlp e ffmpeg)
+    const env = { ...process.env, PATH: `${BIN_DIR}:${process.env.PATH}` };
 
+    // Determina qual script rodar
+    const script = (intent.acao === "tocar_musica") ? "tocar_mp3.sh" : "baixar_mp3.sh";
+    const scriptPath = path.join(BASE_DIR, script);
 
+    console.log(`📡 Executando: ${script} com params: ${intent.params}`);
 
-// ===============================
-// ARQUIVOS
-// ===============================
+    // Executa o script Bash
+    exec(`bash "${scriptPath}" "${intent.params}"`, { env }, (err, stdout, stderr) => {
+        let resp = { 
+            nexus: intent.resposta || "Processado.", 
+            url: null,
+            log: stdout 
+        };
 
-app.get("/api/arquivos",(req,res)=>{
+        if (err) {
+            console.error("Erro no script:", stderr);
+            resp.nexus = "⚠️ Falha tática na operação de busca.";
+        }
 
+        // Se o script retornar OK|nome_do_arquivo.mp3
+        if (stdout.includes("OK|")) {
+            const arquivo = stdout.split("|")[1].trim();
+            resp.url = "/" + arquivo; // O frontend concatena com a URL base
+            resp.nexus = `🎶 [NEXUS] Sintonizado: ${arquivo}`;
+        } else if (intent.acao === "baixar_musica" && !err) {
+            // Caso o script não retorne OK mas esteja baixando em background (se você mudar o script)
+            resp.nexus = "📥 Captura iniciada no banco de dados remoto.";
+        }
 
-try {
+        // Salva no log para aprendizado futuro (Contexto)
+        const logMsg = `[${new Date().toLocaleString()}] USER: ${texto} | NEXUS: ${resp.nexus}\n`;
+        fs.appendFileSync(BRAIN_LOG, logMsg);
 
-
-const arquivos =
-fs.readdirSync(BASE_DIR)
-.filter(f =>
- /\.(mp3|webm|m4a|ogg)$/i.test(f)
-)
-.sort();
-
-
-
-res.json(arquivos);
-
-
-
-} catch {
-
-
-res.json([]);
-
-
-}
-
-
+        res.json(resp);
+    });
 });
 
-
-
-// ===============================
-// STATUS
-// ===============================
-
-app.get("/api/status",(req,res)=>{
-
-
-res.json({
-
-status:"ONLINE",
-
-sistema:"NEXUS MASTER",
-
-biblioteca:
-obterBiblioteca(),
-
-memoria:"ATIVA",
-
-porta:PORT
-
-});
-
-
-});
-
-
-
-// ===============================
-// START
-// ===============================
-
-app.listen(PORT,"0.0.0.0",()=>{
-
-console.log(
-`🚀 NEXUS MASTER ONLINE PORT ${PORT}`
-);
-
+// Inicialização do Servidor
+app.listen(PORT, "0.0.0.0", () => {
+    console.log(`
+    =========================================
+    🚀 NEXUS MASTER ONLINE - CORE SYSTEM
+    📡 PORTA: ${PORT}
+    📂 BASE: ${BASE_DIR}
+    🛠️ BINS: ${BIN_DIR}
+    =========================================
+    `);
 });
