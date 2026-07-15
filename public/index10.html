@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>NEXUS | COMMAND CENTER</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
-
+    
     <!-- SDKs FIREBASE COMPAT -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -15,29 +15,29 @@
         :root { --bg: #05070a; --accent: #00f2ff; --panel: rgba(16, 20, 28, 0.9); --text: #c4d1d9; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Rajdhani', sans-serif; }
         body { background: var(--bg); color: var(--text); height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
-
+        
         header { padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--accent); background: rgba(0,0,0,0.8); }
         header h1 { font-family: 'Orbitron'; font-size: 14px; color: var(--accent); text-transform: uppercase; }
-
+        
         #user-profile { display: flex; align-items: center; gap: 8px; }
         #user-img { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--accent); display: none; }
         .btn-auth { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 4px 10px; border-radius: 12px; cursor: pointer; font-size: 11px; font-weight: bold; }
 
         main { flex: 1; display: flex; flex-direction: column; padding: 10px; gap: 10px; overflow: hidden; }
 
+        /* SEÇÃO DUPLA: BIBLIOTECA E PLAYLIST */
         .tabs { display: flex; gap: 5px; margin-bottom: -5px; }
         .tab-btn { background: var(--panel); border: 1px solid #1a202c; border-bottom: none; color: #718096; padding: 5px 12px; border-radius: 8px 8px 0 0; font-size: 11px; cursor: pointer; }
         .tab-btn.active { color: var(--accent); border-color: var(--accent); background: rgba(0,242,255,0.05); }
 
         .list-container { background: var(--panel); border: 1px solid #1a202c; border-radius: 0 12px 12px 12px; padding: 10px; height: 180px; display: flex; flex-direction: column; }
         #item-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
-
+        
         .list-item { background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 6px; font-size: 13px; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid transparent; }
         .list-item:hover { border-left-color: var(--accent); }
         .item-actions { display: flex; gap: 10px; align-items: center; }
         .btn-star { color: #4a5568; cursor: pointer; font-size: 16px; transition: 0.3s; }
         .btn-star.active { color: #ffcc00; text-shadow: 0 0 5px #ffcc00; }
-        .status-tag { font-size: 9px; padding: 2px 5px; border-radius: 4px; }
 
         .chat-zone { flex: 1; background: var(--panel); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
         #history { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; }
@@ -62,7 +62,7 @@
             <button id="auth-btn" class="btn-auth" onclick="toggleLogin()">LOGIN GOOGLE</button>
         </div>
     </header>
-
+    
     <main>
         <div class="tabs">
             <button id="tab-lib" class="tab-btn active" onclick="switchTab('lib')">BIBLIOTECA RENDER</button>
@@ -73,7 +73,7 @@
         </div>
 
         <div class="chat-zone">
-            <div id="history"><div class="bubble ai">Núcleo NEXUS MASTER ONLINE - Sincronizado.</div></div>
+            <div id="history"><div class="bubble ai">Núcleo NEXUS MASTER ONLINE - Biblioteca sincronizada.</div></div>
         </div>
     </main>
 
@@ -88,6 +88,7 @@
     </footer>
 
     <script>
+        // CONFIGURAÇÃO REALTIME DATABASE
         const firebaseConfig = {
           apiKey: "AIzaSyCTX4Bgjd7T0WV_KkHnJm7Tgk3CodyO6dM",
           authDomain: "nexus-core-42ebb.firebaseapp.com",
@@ -101,10 +102,11 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.database();
-
+        
         let user = null;
         let currentTab = 'lib';
 
+        // AUTH
         async function toggleLogin() {
             if (!user) {
                 const provider = new firebase.auth.GoogleAuthProvider();
@@ -122,9 +124,11 @@
             if (u) {
                 btn.innerText = "SAIR";
                 img.src = u.photoURL; img.style.display = "block";
+                addMsg(`Sincronizado: ${u.displayName}.`, 'ai');
             }
         });
 
+        // NAVEGAÇÃO
         function switchTab(t) {
             currentTab = t;
             document.getElementById('tab-lib').className = t === 'lib' ? 'tab-btn active' : 'tab-btn';
@@ -132,6 +136,7 @@
             t === 'lib' ? loadLibrary() : loadPlaylist();
         }
 
+        // CARREGA ARQUIVOS DO RENDER
         async function loadLibrary() {
             try {
                 const r = await fetch('/api/arquivos');
@@ -147,37 +152,25 @@
             } catch (e) { document.getElementById('item-list').innerText = "Erro ao ler Render."; }
         }
 
-        async function loadPlaylist() {
+        // CARREGA PLAYLIST DO FIREBASE
+        function loadPlaylist() {
             if (!user) {
-                document.getElementById('item-list').innerHTML = "<div style='text-align:center; padding:20px;'>Faça login.</div>";
+                document.getElementById('item-list').innerHTML = "<div style='text-align:center; padding:20px; font-size:12px;'>Faça login para ver sua nuvem.</div>";
                 return;
             }
-
-            // Pega arquivos no disco para comparar
-            const r = await fetch('/api/arquivos');
-            const localFiles = await r.json();
-
             db.ref(`playlists/${user.uid}`).on('value', snapshot => {
                 const data = snapshot.val();
                 if (!data) {
-                    document.getElementById('item-list').innerHTML = "<div style='text-align:center; padding:20px;'>Vazia.</div>";
+                    document.getElementById('item-list').innerHTML = "<div style='text-align:center; padding:20px; font-size:12px;'>Sua nuvem está vazia.</div>";
                     return;
                 }
                 const items = Object.values(data);
-                document.getElementById('item-list').innerHTML = items.map(item => {
-                    const isLocal = localFiles.some(f => f.toLowerCase().includes(item.name.toLowerCase()));
-                    return `
-                        <div class="list-item" style="${isLocal ? '' : 'opacity: 0.7;'}">
-                            <span onclick="copyCmd('${item.name}')">${item.name}</span>
-                            <div class="item-actions">
-                                <span class="status-tag" style="background: ${isLocal ? '#00f2ff22' : '#ff444422'}; color: ${isLocal ? '#00f2ff' : '#ff4444'};">
-                                    ${isLocal ? 'DISCO' : 'NUVEM'}
-                                </span>
-                                <span class="btn-star active">★</span>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
+                document.getElementById('item-list').innerHTML = items.map(item => `
+                    <div class="list-item">
+                        <span onclick="copyCmd('${item.name}')">${item.name}</span>
+                        <span class="btn-star active">★</span>
+                    </div>
+                `).join('');
             });
         }
 
@@ -187,9 +180,9 @@
         }
 
         async function addToDB(name) {
-            if (!user) return addMsg("Login necessário!", 'ai');
+            if (!user) return addMsg("Login necessário para salvar!", 'ai');
             await db.ref(`playlists/${user.uid}`).push({ name, date: Date.now() });
-            addMsg(`⭐ ${name} salva no Firebase!`, 'ai');
+            addMsg(`⭐ ${name} salva no Realtime Database!`, 'ai');
         }
 
         async function send() {
@@ -210,8 +203,8 @@
                     const p = document.getElementById('nexusPlayer');
                     p.src = data.url; p.play();
                 }
-                setTimeout(() => currentTab === 'lib' ? loadLibrary() : loadPlaylist(), 2000);
-            } catch (e) { addMsg("Erro de conexão.", 'ai'); }
+                setTimeout(() => currentTab === 'lib' ? loadLibrary() : loadPlaylist(), 3000);
+            } catch (e) { addMsg("Erro de link.", 'ai'); }
         }
 
         function addMsg(text, type) {
