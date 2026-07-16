@@ -4,10 +4,9 @@ set -Eeuo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$DIR/.." && pwd)"
 BIN="$ROOT/bin"
-export PATH="$BIN:/usr/local/bin:/usr/bin:$PATH"
 
-YTDLP="$(command -v yt-dlp || echo "$BIN/yt-dlp")"
-FFMPEG="$(command -v ffmpeg || echo "$BIN/ffmpeg")"
+YTDLP="$BIN/yt-dlp"
+FFMPEG="$BIN/ffmpeg"
 
 BUSCA="${*:-}"
 if [ -z "$BUSCA" ]; then
@@ -15,48 +14,46 @@ if [ -z "$BUSCA" ]; then
     exit 1
 fi
 
-echo "📥 Buscando: $BUSCA" >&2
+echo "📡 Nexus em modo furtivo buscando: $BUSCA" >&2
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
-baixar(){
-    # Usando iOS e Web como clientes para evitar detecção de bot no Render
+baixar() {
+    # O PULO DO GATO: Usamos o cliente 'android_vr' ou 'tv' 
+    # que o YouTube quase nunca bloqueia com 403
     "$YTDLP" \
-    "ytsearch1:$BUSCA audio" \
-    --no-playlist \
-    --extract-audio \
-    --audio-format mp3 \
-    --audio-quality 0 \
-    --format "bestaudio/best" \
-    --extractor-args "youtube:player_client=ios,web_embedded" \
-    --no-check-certificate \
-    --ffmpeg-location "$FFMPEG" \
-    --no-cache-dir \
-    -o "$TMP/%(title)s.%(ext)s"
+        "ytsearch1:$BUSCA" \
+        --no-playlist \
+        --extract-audio \
+        --audio-format mp3 \
+        --audio-quality 0 \
+        --no-check-certificate \
+        --ffmpeg-location "$FFMPEG" \
+        --extractor-args "youtube:player_client=android_vr,web_embedded" \
+        -o "$TMP/%(title)s.%(ext)s"
 }
 
-if ! baixar ; then
-    echo "⚠️ Modo alternativo (MWeb)..." >&2
-    "$YTDLP" \
-    "ytsearch1:$BUSCA" \
-    --no-playlist \
-    --extract-audio \
-    --audio-format mp3 \
-    --audio-quality 0 \
-    --extractor-args "youtube:player_client=mweb" \
-    --ffmpeg-location "$FFMPEG" \
-    -o "$TMP/%(title)s.%(ext)s"
+if ! baixar; then
+    echo "⚠️ Tentando segunda frequência..." >&2
+    "$YTDLP" "ytsearch1:$BUSCA" \
+        --no-playlist --extract-audio --audio-format mp3 \
+        --ffmpeg-location "$FFMPEG" \
+        --extractor-args "youtube:player_client=tv" \
+        -o "$TMP/%(title)s.%(ext)s"
 fi
 
 ARQUIVO=$(find "$TMP" -type f \( -name "*.mp3" -o -name "*.m4a" -o -name "*.webm" \) | head -n1)
 
 if [ -z "$ARQUIVO" ]; then
-    echo "ERRO|O YouTube bloqueou a requisição do Render."
+    echo "ERRO|Bloqueio total do YouTube."
     exit 1
 fi
 
-NOME=$(basename "$ARQUIVO" | sed 's/\.[^.]*$//').mp3
-mv "$ARQUIVO" "$DIR/$NOME"
-chmod 644 "$DIR/$NOME"
+NOME_ORIGINAL=$(basename "$ARQUIVO")
+NOME_LIMPO=$(echo "$NOME_ORIGINAL" | sed 's/[^A-Za-z0-9._-]/_/g' | sed 's/__+/_/g')
+NOME_FINAL="${NOME_LIMPO%.*}.mp3"
 
-echo "OK|$NOME"
+mv "$ARQUIVO" "$DIR/$NOME_FINAL"
+chmod 644 "$DIR/$NOME_FINAL"
+
+echo "OK|$NOME_FINAL"
