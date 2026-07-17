@@ -163,7 +163,7 @@
                     document.getElementById('item-list').innerHTML = "<div style='text-align:center; padding:20px;'>Vazia.</div>";
                     return;
                 }
-                const items = Object.values(data);
+                const items = Object.values(data).filter((item, index, self) => index === self.findIndex(x => x.name === item.name));
                 document.getElementById('item-list').innerHTML = items.map(item => {
                     const isLocal = localFiles.some(f => f.toLowerCase().includes(item.name.toLowerCase()));
                     return `
