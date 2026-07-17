@@ -1,4 +1,5 @@
 require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
@@ -7,48 +8,454 @@ const path = require("path");
 const fs = require("fs");
 
 const app = express();
+
 const PORT = process.env.PORT || 10000;
 
 const BASE_DIR = path.join(__dirname, "public");
-const BIN_DIR = path.join(__dirname, "bin");
 const BRAIN_LOG = path.join(BASE_DIR, "nexus_brain.log");
+
+
+// cria public se não existir
+if (!fs.existsSync(BASE_DIR)) {
+    fs.mkdirSync(BASE_DIR, { recursive: true });
+}
+
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static(BASE_DIR));
 
-if (!fs.existsSync(BASE_DIR)) fs.mkdirSync(BASE_DIR, { recursive: true });
-if (!fs.existsSync(BRAIN_LOG)) fs.writeFileSync(BRAIN_LOG, "");
 
-async function interpretar(texto) {
-    const bib = fs.readdirSync(BASE_DIR).filter(f => /\.(mp3|webm|m4a)$/i.test(f)).join(", ") || "Vazia";
-    const prompt = `Analise: "${texto}". BIBLIOTECA: [${bib}]. Responda JSON: {"acao":"baixar_musica|tocar_musica", "params":"nome", "resposta":"ok"}`;
+// ===============================
+// BIBLIOTECA
+// ===============================
+
+function obterBiblioteca() {
+
     try {
-        const res = await axios.post(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${process.env.GEMINI_API_KEY}`,
-            { contents: [{ parts: [{ text: prompt }] }] });
-        return JSON.parse(res.data.candidates[0].content.parts[0].text.replace(/```json|```/g, "").trim());
-    } catch (e) { return { acao: "baixar_musica", params: texto, resposta: "Buscando..." }; }
+
+        return fs.readdirSync(BASE_DIR)
+        .filter(file =>
+            /\.(mp3|webm|m4a|ogg)$/i.test(file)
+        )
+        .join(", ") || "Vazia";
+
+    } catch {
+
+        return "Vazia";
+
+    }
+
 }
 
-app.get("/api/arquivos", (req, res) => {
-    fs.readdir(BASE_DIR, (err, files) => res.json(err ? [] : files.filter(f => /\.(mp3|webm|m4a)$/i.test(f)).sort()));
+
+// ===============================
+// MEMÓRIA
+// ===============================
+
+function obterContexto() {
+
+    try {
+
+        if (!fs.existsSync(BRAIN_LOG))
+            return "Nenhum aprendizado.";
+
+        return fs.readFileSync(
+            BRAIN_LOG,
+            "utf8"
+        )
+        .split("\n")
+        .slice(-20)
+        .join("\n");
+
+    } catch {
+
+        return "Erro memória.";
+
+    }
+
+}
+
+
+function salvarMemoria(texto) {
+
+    fs.appendFileSync(
+        BRAIN_LOG,
+        `[${new Date().toLocaleString()}] ${texto}\n`
+    );
+
+}
+
+
+// ===============================
+// GEMINI
+// ===============================
+
+async function interpretar(texto) {
+
+
+const prompt = `
+
+Você é o NEXUS.
+
+Biblioteca:
+${obterBiblioteca()}
+
+Histórico:
+${obterContexto()}
+
+
+REGRAS:
+
+Se música existir:
+acao="tocar_musica"
+
+Se música não existir:
+acao="baixar_musica"
+
+Nunca usar SoundCloud.
+
+Responder somente JSON:
+
+{
+"acao":"",
+"params":"",
+"resposta":"",
+"reflexao":""
+}
+
+
+Usuário:
+${texto}
+
+`;
+
+
+
+try {
+
+
+const resposta = await axios.post(
+
+`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${process.env.GEMINI_API_KEY}`,
+
+{
+contents:[
+{
+parts:[
+{
+text:prompt
+}
+]
+}
+]
+},
+
+{
+timeout:20000
+}
+
+);
+
+
+
+let textoIA =
+resposta.data
+.candidates[0]
+.content
+.parts[0]
+.text
+.replace(/```json/g,"")
+.replace(/```/g,"")
+.trim();
+
+
+
+return {
+
+success:true,
+
+data:JSON.parse(textoIA)
+
+};
+
+
+
+} catch(e) {
+
+
+console.log(
+"Erro Gemini:",
+e.message
+);
+
+
+return {
+
+success:false
+
+};
+
+
+}
+
+
+}
+
+
+
+// ===============================
+// EXECUTAR SCRIPT
+// ===============================
+
+function executar(script,parametro){
+
+
+return new Promise(resolve=>{
+
+
+const arquivo =
+path.join(BASE_DIR,script);
+
+
+const nome =
+String(parametro || "")
+.replace(/"/g,"")
+.trim();
+
+
+
+exec(
+
+`bash "${arquivo}" "${nome}"`,
+
+{
+timeout:120000
+},
+
+(err,stdout,stderr)=>{
+
+
+resolve({
+
+ok:!err,
+
+stdout:stdout || "",
+
+stderr:stderr || ""
+
 });
 
-app.post("/api/chat", async (req, res) => {
-    const texto = req.body.texto || "";
-    const intent = await interpretar(texto);
-    const env = { ...process.env, PATH: `${BIN_DIR}:${process.env.PATH}` };
-    const script = (intent.acao === "tocar_musica") ? "tocar_mp3.sh" : "baixar_mp3.sh";
 
-    exec(`bash "public/${script}" "${intent.params}"`, { env }, (err, stdout) => {
-        let resp = { nexus: intent.resposta, url: null };
-        if (stdout.includes("OK|")) {
-            const arquivo = stdout.split("|")[1].trim();
-            resp.url = "/" + arquivo;
-            resp.nexus = `🎶 Sintonizado: ${arquivo}`;
-        }
-        fs.appendFileSync(BRAIN_LOG, `[${new Date().toLocaleString()}] USER: ${texto} | NEXUS: ${resp.nexus}\n`);
-        res.json(resp);
-    });
+}
+
+);
+
+
 });
-app.listen(PORT, "0.0.0.0", () => console.log(`🚀 NEXUS MASTER ONLINE NA PORTA ${PORT}`));
+
+
+}
+
+
+
+// ===============================
+// CHAT
+// ===============================
+
+app.post("/api/chat", async(req,res)=>{
+
+
+const texto =
+req.body.texto || "";
+
+
+
+const resultado =
+await interpretar(texto);
+
+
+
+const intent =
+resultado.success
+?
+resultado.data
+:
+{
+acao:"baixar_musica",
+params:texto,
+resposta:"Executando protocolo local."
+};
+
+
+
+let script;
+
+
+
+if(intent.acao==="tocar_musica"){
+
+script="tocar_mp3.sh";
+
+
+}else{
+
+
+script="baixar_mp3.sh";
+
+
+}
+
+
+
+const execucao =
+await executar(
+script,
+intent.params
+);
+
+
+
+let retorno = {
+
+
+nexus:
+intent.resposta ||
+"Processado.",
+
+
+log:
+execucao.stdout ||
+execucao.stderr || "",
+
+
+reflexao:
+intent.reflexao || ""
+
+};
+
+
+
+
+
+if(execucao.stdout.includes("OK|")){
+
+
+const arquivo =
+execucao.stdout
+.split("OK|")[1]
+.trim();
+
+
+
+retorno.url =
+"/" + encodeURIComponent(arquivo);
+
+
+
+retorno.nexus =
+"🎵 Tocando: " + arquivo;
+
+
+}
+
+
+
+if(intent.acao==="baixar_musica"){
+
+retorno.nexus =
+"📥 Baixando para biblioteca local.";
+
+}
+
+
+
+salvarMemoria(
+`USER:${texto} | ${retorno.nexus}`
+);
+
+
+
+res.json(retorno);
+
+
+
+});
+
+
+
+
+// ===============================
+// ARQUIVOS
+// ===============================
+
+app.get("/api/arquivos",(req,res)=>{
+
+
+try {
+
+
+const arquivos =
+fs.readdirSync(BASE_DIR)
+.filter(f =>
+ /\.(mp3|webm|m4a|ogg)$/i.test(f)
+)
+.sort();
+
+
+
+res.json(arquivos);
+
+
+
+} catch {
+
+
+res.json([]);
+
+
+}
+
+
+});
+
+
+
+// ===============================
+// STATUS
+// ===============================
+
+app.get("/api/status",(req,res)=>{
+
+
+res.json({
+
+status:"ONLINE",
+
+sistema:"NEXUS MASTER",
+
+biblioteca:
+obterBiblioteca(),
+
+memoria:"ATIVA",
+
+porta:PORT
+
+});
+
+
+});
+
+
+
+// ===============================
+// START
+// ===============================
+
+app.listen(PORT,"0.0.0.0",()=>{
+
+console.log(
+`🚀 NEXUS MASTER ONLINE PORT ${PORT}`
+);
+
+});
