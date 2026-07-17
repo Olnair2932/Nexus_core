@@ -84,7 +84,7 @@ function encontrarMusica(pedido){
 
         const palavras = busca.split(/\s+/);
 
-        return palavras.some(p =>
+        return palavras.every(p =>
             p.length > 2 && nome.includes(p)
         );
 
