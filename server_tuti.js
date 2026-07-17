@@ -265,69 +265,81 @@ stderr:stderr || ""
 
 app.post("/api/chat", async(req,res)=>{
 
+const texto = req.body.texto || "";
 
-const texto =
-req.body.texto || "";
+let resultado = await interpretar(texto);
 
-
-
-const resultado =
-await interpretar(texto);
-
-
-
-const intent =
-resultado.success
-?
-resultado.data
-:
-{
-acao:"baixar_musica",
-params:texto,
-resposta:"Executando protocolo local."
-};
+if (!resultado.success) {
+    resultado = {
+        success:true,
+        data:{
+            acao:"baixar_musica",
+            params:texto,
+            resposta:"Executando protocolo local."
+        }
+    };
+}
 
 
-
-let script;
-
-
-
-if(intent.acao==="tocar_musica"){
-
-script="tocar_mp3.sh";
+// Correção: tocar somente se existir
+const bibliotecaAtual = obterBiblioteca().toLowerCase();
+const pedido = texto
+.toLowerCase()
+.replace(/tocar|toca|consagração|consagracao/g,"")
+.trim();
 
 
-}else{
+if (
+    pedido &&
+    (texto.toLowerCase().includes("tocar") ||
+     texto.toLowerCase().includes("toca"))
+) {
 
+    if (bibliotecaAtual.includes(pedido)) {
 
-script="baixar_mp3.sh";
+        resultado.data = {
+            acao:"tocar_musica",
+            params:pedido,
+            resposta:"Arquivo encontrado. Tocando."
+        };
 
+    } else {
+
+        resultado.data = {
+            acao:"baixar_musica",
+            params:pedido,
+            resposta:"Arquivo não encontrado. Baixando."
+        };
+
+    }
 
 }
 
 
+const intent = resultado.data;
 
-const execucao =
-await executar(
-script,
-intent.params
+let script;
+
+if(intent.acao==="tocar_musica"){
+    script="tocar_mp3.sh";
+}else{
+    script="baixar_mp3.sh";
+}
+
+
+const execucao = await executar(
+    script,
+    intent.params
 );
-
 
 
 let retorno = {
 
-
 nexus:
-intent.resposta ||
-"Processado.",
-
+intent.resposta || "Processado.",
 
 log:
-execucao.stdout ||
-execucao.stderr || "",
-
+execucao.stdout || execucao.stderr || "",
 
 reflexao:
 intent.reflexao || ""
@@ -335,39 +347,24 @@ intent.reflexao || ""
 };
 
 
-
-
-
 if(execucao.stdout.includes("OK|")){
 
-
 const arquivo =
-execucao.stdout
-.split("OK|")[1]
-.trim();
-
-
+execucao.stdout.split("OK|")[1].trim();
 
 retorno.url =
 "/" + encodeURIComponent(arquivo);
 
-
-
 retorno.nexus =
 "🎵 Tocando: " + arquivo;
 
-
 }
-
 
 
 if(intent.acao==="baixar_musica"){
-
 retorno.nexus =
 "📥 Baixando para biblioteca local.";
-
 }
-
 
 
 salvarMemoria(
@@ -375,18 +372,14 @@ salvarMemoria(
 );
 
 
-
 res.json(retorno);
-
-
 
 });
 
 
-
-
 // ===============================
 // ARQUIVOS
+
 // ===============================
 
 app.get("/api/arquivos",(req,res)=>{
