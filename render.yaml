@@ -3,5 +3,5 @@ services:
     name: nexus-core
     runtime: node
     plan: free
-    buildCommand: bash render-build.sh
+    buildCommand: npm install
     startCommand: npm start
