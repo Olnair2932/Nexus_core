@@ -338,7 +338,7 @@ retorno.nexus =
 
 
 
-if(acao==="baixar_musica"){
+if(acao==="baixar_musica" && !retorno.url){
 
 retorno.nexus =
 "📥 Baixando para biblioteca local.";
