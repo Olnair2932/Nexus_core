@@ -78,7 +78,13 @@ function encontrarMusica(pedido){
             .replace(/[^a-z0-9]/g,"")
             .trim();
 
-        return nome.includes(busca) || busca.includes(nome);
+        if(nome.includes(busca)){
+            return true;
+        }
+
+        const partes = busca.match(/[a-z]{4,}/g) || [];
+
+        return partes.some(p => nome.includes(p));
 
     });
 
