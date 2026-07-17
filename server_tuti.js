@@ -284,8 +284,9 @@ if (!resultado.success) {
 // Correção: tocar somente se existir
 const normalizar = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
 const bibliotecaAtual = normalizar(obterBiblioteca());
+
 const pedido = normalizar(texto)
-.replace(/tocar|toca/g,"")
+.replace(/tocar|toca|quero ouvir|coloca|bota|executa|play|ouvir/g,"")
 .trim();
 
 
