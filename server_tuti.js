@@ -10,134 +10,129 @@ const fs = require("fs");
 const app = express();
 
 const PORT = process.env.PORT || 10000;
-
 const BASE_DIR = path.join(__dirname, "public");
-const BRAIN_LOG = path.join(BASE_DIR, "nexus_brain.log");
+const LOG = path.join(BASE_DIR,"nexus_brain.log");
 
-
-// cria public se não existir
-if (!fs.existsSync(BASE_DIR)) {
-    fs.mkdirSync(BASE_DIR, { recursive: true });
+if(!fs.existsSync(BASE_DIR)){
+    fs.mkdirSync(BASE_DIR,{recursive:true});
 }
-
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static(BASE_DIR));
 
 
-// ===============================
+// ==============================
+// NORMALIZAÇÃO
+// ==============================
+
+function normalizar(txt){
+
+    return String(txt || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"")
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]/g," ")
+    .replace(/\s+/g," ")
+    .trim();
+
+}
+
+
+// ==============================
 // BIBLIOTECA
-// ===============================
+// ==============================
 
-function obterBiblioteca() {
+function arquivos(){
 
-    try {
-
-        return fs.readdirSync(BASE_DIR)
-        .filter(file =>
-            /\.(mp3|mp4|webm|m4a|ogg)$/i.test(file)
-        )
-        .join(", ") || "Vazia";
-
-    } catch {
-
-        return "Vazia";
-
-    }
-
-}
-
-
-// ===============================
-// MEMÓRIA
-// ===============================
-
-function obterContexto() {
-
-    try {
-
-        if (!fs.existsSync(BRAIN_LOG))
-            return "Nenhum aprendizado.";
-
-        return fs.readFileSync(
-            BRAIN_LOG,
-            "utf8"
-        )
-        .split("\n")
-        .slice(-20)
-        .join("\n");
-
-    } catch {
-
-        return "Erro memória.";
-
-    }
-
-}
-
-
-function salvarMemoria(texto) {
-
-    fs.appendFileSync(
-        BRAIN_LOG,
-        `[${new Date().toLocaleString()}] ${texto}\n`
+    return fs.readdirSync(BASE_DIR)
+    .filter(f =>
+        /\.(mp3|mp4|webm|m4a|ogg)$/i.test(f)
     );
 
 }
 
 
-// ===============================
-// GEMINI
-// ===============================
+function biblioteca(){
 
-async function interpretar(texto) {
+    return arquivos().join(", ") || "Vazia";
 
-
-const prompt = `
-
-Você é o NEXUS.
-
-Biblioteca:
-${obterBiblioteca()}
-
-Histórico:
-${obterContexto()}
-
-
-REGRAS:
-
-Se música existir:
-acao="tocar_musica"
-
-Se música não existir:
-acao="baixar_musica"
-
-Nunca usar SoundCloud.
-
-Responder somente JSON:
-
-{
-"acao":"",
-"params":"",
-"resposta":"",
-"reflexao":""
 }
 
 
+// ==============================
+// BUSCA MUSICAL
+// ==============================
+
+function encontrarMusica(pedido){
+
+    const busca = normalizar(pedido);
+
+    const lista = arquivos();
+
+
+    return lista.find(arq=>{
+
+        const nome = normalizar(arq);
+
+        const palavras = busca.split(" ");
+
+        return palavras.every(p =>
+            nome.includes(p)
+        );
+
+    });
+
+}
+
+
+// ==============================
+// MEMÓRIA
+// ==============================
+
+function salvar(texto){
+
+    try{
+
+        fs.appendFileSync(
+            LOG,
+            `[${new Date().toISOString()}] ${texto}\n`
+        );
+
+    }catch{}
+
+}
+
+
+// ==============================
+// GEMINI
+// ==============================
+
+async function pensar(texto){
+
+try{
+
+const prompt = `
+Você é o NEXUS.
+
+Transforme a frase do usuário em comando.
+
+Responda somente JSON:
+
+{
+"acao":"",
+"musica":"",
+"resposta":""
+}
+
 Usuário:
 ${texto}
-
 `;
 
 
+const r = await axios.post(
 
-try {
-
-
-const resposta = await axios.post(
-
-`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${process.env.GEMINI_API_KEY}`,
+`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
 
 {
 contents:[
@@ -149,275 +144,236 @@ text:prompt
 ]
 }
 ]
-},
-
-{
-timeout:20000
 }
 
 );
 
 
-
-let textoIA =
-resposta.data
-.candidates[0]
-.content
-.parts[0]
+let saida =
+r.data.candidates[0]
+.content.parts[0]
 .text
 .replace(/```json/g,"")
 .replace(/```/g,"")
 .trim();
 
 
-
-return {
-
-success:true,
-
-data:JSON.parse(textoIA)
-
-};
+return JSON.parse(saida);
 
 
-
-} catch(e) {
-
+}catch(e){
 
 console.log(
-"Erro Gemini:",
-e.message
+"Gemini:",
+e.response?.data || e.message
 );
 
-
-return {
-
-success:false
-
-};
-
+return null;
 
 }
 
-
 }
 
-
-
-// ===============================
+// ==============================
 // EXECUTAR SCRIPT
-// ===============================
+// ==============================
 
 function executar(script,parametro){
 
-
 return new Promise(resolve=>{
 
+const arquivo = path.join(BASE_DIR,script);
 
-const arquivo =
-path.join(BASE_DIR,script);
-
-
-const nome =
-String(parametro || "")
+const nome = String(parametro || "")
 .replace(/"/g,"")
 .trim();
 
 
-
 exec(
-
 `bash "${arquivo}" "${nome}"`,
-
 {
 timeout:120000
 },
-
 (err,stdout,stderr)=>{
-
 
 resolve({
 
-ok:!err,
-
-stdout:stdout || "",
-
-stderr:stderr || ""
+ok: !err,
+stdout: stdout || "",
+stderr: stderr || ""
 
 });
 
-
-}
-
-);
-
-
 });
 
+});
 
 }
 
 
 
-// ===============================
-// CHAT
-// ===============================
+// ==============================
+// CHAT PRINCIPAL
+// ==============================
 
 app.post("/api/chat", async(req,res)=>{
 
+
 const texto = req.body.texto || "";
 
-let resultado = await interpretar(texto);
 
-if (!resultado.success) {
-    resultado = {
-        success:true,
-        data:{
-            acao:"baixar_musica",
-            params:texto,
-            resposta:"Executando protocolo local."
-        }
-    };
-}
+let comando = await pensar(texto);
 
 
-// Correção: tocar somente se existir
-const normalizar = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
-const bibliotecaAtual = normalizar(obterBiblioteca());
+// Extrai pedido humano mesmo sem Gemini
 
-const pedido = normalizar(texto)
-.replace(/tocar|toca|quero ouvir|coloca|bota|executa|play|ouvir/g,"")
+let pedido = normalizar(texto)
+.replace(
+/tocar|toca|play|ouvir|quero ouvir|coloca|bota|executa|rodar/g,
+""
+)
 .trim();
 
 
-if (
-    pedido &&
-    (texto.toLowerCase().includes("tocar") ||
-     texto.toLowerCase().includes("toca"))
-) {
 
-    if (bibliotecaAtual.includes(pedido)) {
+if(comando?.musica){
 
-        resultado.data = {
-            acao:"tocar_musica",
-            params:pedido,
-            resposta:"Arquivo encontrado. Tocando."
-        };
-
-    } else {
-
-        resultado.data = {
-            acao:"baixar_musica",
-            params:pedido,
-            resposta:"Arquivo não encontrado. Baixando."
-        };
-
-    }
+pedido = comando.musica;
 
 }
 
 
-const intent = resultado.data;
 
-let script;
+let encontrado = encontrarMusica(pedido);
 
-if(intent.acao==="tocar_musica"){
-    script="tocar_mp3.sh";
+
+
+let acao;
+let parametro;
+let resposta;
+
+
+
+if(encontrado){
+
+
+acao = "tocar_musica";
+parametro = encontrado;
+
+resposta =
+"Arquivo encontrado. Tocando.";
+
+
 }else{
-    script="baixar_mp3.sh";
+
+
+acao = "baixar_musica";
+parametro = pedido;
+
+resposta =
+"Arquivo não encontrado. Baixando.";
+
 }
 
 
-const execucao = await executar(
-    script,
-    intent.params
+
+
+let script =
+acao === "tocar_musica"
+?
+"tocar_mp3.sh"
+:
+"baixar_mp3.sh";
+
+
+
+const execucao =
+await executar(
+script,
+parametro
 );
 
 
-let retorno = {
 
-nexus:
-intent.resposta || "Processado.",
+let retorno={
+
+nexus: resposta,
 
 log:
-execucao.stdout || execucao.stderr || "",
+execucao.stdout ||
+execucao.stderr ||
+"",
 
-reflexao:
-intent.reflexao || ""
+url:null
 
 };
 
 
+
 if(execucao.stdout.includes("OK|")){
 
+
 const arquivo =
-execucao.stdout.split("OK|")[1].trim();
+execucao.stdout
+.split("OK|")[1]
+.trim();
+
 
 retorno.url =
 "/" + encodeURIComponent(arquivo);
 
+
 retorno.nexus =
 "🎵 Tocando: " + arquivo;
 
+
 }
 
 
-if(intent.acao==="baixar_musica"){
+
+if(acao==="baixar_musica"){
+
 retorno.nexus =
 "📥 Baixando para biblioteca local.";
+
 }
 
 
-salvarMemoria(
+
+salvar(
 `USER:${texto} | ${retorno.nexus}`
 );
 
 
+
 res.json(retorno);
+
 
 });
 
 
-// ===============================
-// ARQUIVOS
 
-// ===============================
+
+// ==============================
+// LISTA DE ARQUIVOS
+// ==============================
+
 
 app.get("/api/arquivos",(req,res)=>{
 
-
-try {
-
-
-const arquivos =
-fs.readdirSync(BASE_DIR)
-.filter(f =>
- /\.(mp3|mp4|webm|m4a|ogg)$/i.test(f)
-)
-.sort();
-
-
-
-res.json(arquivos);
-
-
-
-} catch {
-
-
-res.json([]);
-
-
-}
-
+res.json(
+arquivos().sort()
+);
 
 });
 
 
 
-// ===============================
+
+// ==============================
 // STATUS
-// ===============================
+// ==============================
+
 
 app.get("/api/status",(req,res)=>{
 
@@ -428,10 +384,7 @@ status:"ONLINE",
 
 sistema:"NEXUS MASTER",
 
-biblioteca:
-obterBiblioteca(),
-
-memoria:"ATIVA",
+biblioteca:biblioteca(),
 
 porta:PORT
 
@@ -440,16 +393,3 @@ porta:PORT
 
 });
 
-
-
-// ===============================
-// START
-// ===============================
-
-app.listen(PORT,"0.0.0.0",()=>{
-
-console.log(
-`🚀 NEXUS MASTER ONLINE PORT ${PORT}`
-);
-
-});
