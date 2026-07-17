@@ -36,7 +36,7 @@ function obterBiblioteca() {
 
         return fs.readdirSync(BASE_DIR)
         .filter(file =>
-            /\.(mp3|webm|m4a|ogg)$/i.test(file)
+            /\.(mp3|mp4|webm|m4a|ogg)$/i.test(file)
         )
         .join(", ") || "Vazia";
 
@@ -398,7 +398,7 @@ try {
 const arquivos =
 fs.readdirSync(BASE_DIR)
 .filter(f =>
- /\.(mp3|webm|m4a|ogg)$/i.test(f)
+ /\.(mp3|mp4|webm|m4a|ogg)$/i.test(f)
 )
 .sort();
 
