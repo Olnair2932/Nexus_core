@@ -282,7 +282,8 @@ if (!resultado.success) {
 
 
 // Correção: tocar somente se existir
-const bibliotecaAtual = obterBiblioteca().toLowerCase();
+const normalizar = s => s.normalize("NFD").replace([\u0300-\u036f]/g,"").toLowerCase();
+const bibliotecaAtual = normalizar(obterBiblioteca());
 const pedido = texto
 .toLowerCase()
 .replace(/tocar|toca|consagração|consagracao/g,"")
