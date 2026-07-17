@@ -188,7 +188,11 @@
 
         async function addToDB(name) {
             if (!user) return addMsg("Login necessário!", 'ai');
-            await db.ref(`playlists/${user.uid}`).push({ name: name, url: "/" + name, date: Date.now() });
+            await db.ref(`playlists/${user.uid}/${name.replace(/[.#$\[\]\/]/g,'_')}`).set({
+                name: name,
+                url: "/" + name,
+                date: Date.now()
+            });
             addMsg(`⭐ ${name} salva no Firebase!`, 'ai');
         }
 
@@ -201,7 +205,7 @@
             try {
                 const response = await fetch('/api/chat', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ texto: val })
+                    body: JSON.stringify({ texto: val, uid: user ? user.uid : null })
                 });
                 const data = await response.json();
                 addMsg(data.nexus, 'ai');
