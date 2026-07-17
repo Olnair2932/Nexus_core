@@ -66,19 +66,26 @@ function biblioteca(){
 
 function encontrarMusica(pedido){
 
-    const busca = normalizar(pedido);
+    const busca = normalizar(pedido)
+        .replace(/[^a-z0-9 ]/g," ")
+        .trim();
 
     const lista = arquivos();
 
-
     return lista.find(arq=>{
 
-        const nome = normalizar(arq);
+        const nome = normalizar(arq)
+            .replace(/[^a-z0-9 ]/g," ")
+            .trim();
 
-        const palavras = busca.split(" ");
+        if(nome.includes(busca)){
+            return true;
+        }
 
-        return palavras.every(p =>
-            nome.includes(p)
+        const palavras = busca.split(/\s+/);
+
+        return palavras.some(p =>
+            p.length > 2 && nome.includes(p)
         );
 
     });
