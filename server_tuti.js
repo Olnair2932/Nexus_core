@@ -393,3 +393,17 @@ porta:PORT
 
 });
 
+
+
+// ==============================
+// START SERVER
+// ==============================
+
+app.listen(PORT,"0.0.0.0",()=>{
+
+console.log(
+`🚀 NEXUS MASTER ONLINE PORT ${PORT}`
+);
+
+});
+
