@@ -13,7 +13,7 @@ TMP=$(mktemp -d)
 
 yt-dlp \
   --js-runtimes deno \
-  --extractor-args "youtube:player_client=android" \
+  --extractor-args "youtube:player_client=android,web" \
   --no-playlist \
   "$PEDIDO" \
   -f "bestaudio/best" \
