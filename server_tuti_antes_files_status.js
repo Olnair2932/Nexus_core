@@ -10,8 +10,6 @@ const { listarProvedores } = require("./services/music");
 
 
 const chatRoute = require("./routes/chat");
-const filesRoute = require("./routes/files");
-const statusRoute = require("./routes/status");
 
 
 const app = express();
@@ -42,8 +40,53 @@ app.use(express.static(BASE_DIR));
 // ROTAS
 
 app.use("/api",chatRoute);
-app.use("/api",filesRoute);
-app.use("/api",statusRoute);
+
+
+
+// ARQUIVOS
+
+app.get("/api/arquivos",(req,res)=>{
+
+
+    const arquivos = fs.readdirSync(BASE_DIR)
+    .filter(f =>
+        /\.(mp3|mp4|webm|m4a|ogg)$/i.test(f)
+    );
+
+
+    res.json(
+        arquivos.sort()
+    );
+
+
+});
+
+
+
+// STATUS
+
+app.get("/api/status",(req,res)=>{
+
+
+    res.json({
+
+        status:"ONLINE",
+
+        sistema:"NEXUS MULTIFONTE",
+
+        provedores:listarProvedores(),
+
+        biblioteca:
+        fs.readdirSync(BASE_DIR)
+        .filter(f=>/\.(mp3|mp4|webm|m4a|ogg)$/i.test(f))
+        .length,
+
+        porta:PORT
+
+    });
+
+
+});
 
 
 
