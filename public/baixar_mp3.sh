@@ -9,7 +9,8 @@ fi
 echo "📡 Nexus detector: $PEDIDO"
 
 DESTINO="$(pwd)"
-TMP=$(mktemp -d)
+TMP="$(pwd)/tmp_download"
+mkdir -p "$TMP"
 
 yt-dlp \
   --js-runtimes deno \
