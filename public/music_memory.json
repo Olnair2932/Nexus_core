@@ -1,3 +1,84 @@
 {
-  "musicas": {}
+  "musicas": {
+    "aline": {
+      "arquivo": "CONSAGRA__O___Aline_Barros____Vers_o__pica_Orquestral.mp3",
+      "vezes": 0
+    },
+    "barros": {
+      "arquivo": "CONSAGRA__O___Aline_Barros____Vers_o__pica_Orquestral.mp3",
+      "vezes": 0
+    },
+    "consagra": {
+      "arquivo": "CONSAGRA__O___Aline_Barros____Vers_o__pica_Orquestral.mp3",
+      "vezes": 0
+    },
+    "louvor": {
+      "arquivo": "Aline_Barros_-_Consagra__o___Louvor_ao_Rei__Ao_Vivo_.mp3",
+      "vezes": 0
+    },
+    "vivo": {
+      "arquivo": "Aline_Barros_-_Consagra__o___Louvor_ao_Rei__Ao_Vivo_.mp3",
+      "vezes": 0
+    },
+    "vers": {
+      "arquivo": "CONSAGRA__O___Aline_Barros____Vers_o__pica_Orquestral.mp3",
+      "vezes": 0
+    },
+    "pica": {
+      "arquivo": "CONSAGRA__O___Aline_Barros____Vers_o__pica_Orquestral.mp3",
+      "vezes": 0
+    },
+    "orquestral": {
+      "arquivo": "CONSAGRA__O___Aline_Barros____Vers_o__pica_Orquestral.mp3",
+      "vezes": 0
+    },
+    "chitaozinho": {
+      "arquivo": "Chitaozinho_Xororo_-_Evidencias.mp3",
+      "vezes": 0
+    },
+    "xororo": {
+      "arquivo": "Chitaozinho_Xororo_-_Evidencias.mp3",
+      "vezes": 0
+    },
+    "evidencias": {
+      "arquivo": "Chitaozinho_Xororo_-_Evidencias.mp3",
+      "vezes": 0
+    },
+    "serranos": {
+      "arquivo": "DVD_Os_Serranos_40_Anos_-_Tordilho_Negro.mp3",
+      "vezes": 0
+    },
+    "anos": {
+      "arquivo": "DVD_Os_Serranos_40_Anos_-_Tordilho_Negro.mp3",
+      "vezes": 0
+    },
+    "tordilho": {
+      "arquivo": "DVD_Os_Serranos_40_Anos_-_Tordilho_Negro.mp3",
+      "vezes": 0
+    },
+    "negro": {
+      "arquivo": "DVD_Os_Serranos_40_Anos_-_Tordilho_Negro.mp3",
+      "vezes": 0
+    },
+    "terno": {
+      "arquivo": "Terno_Rei_-_Dia_Lindo_Clipe_Oficial.mp3",
+      "vezes": 0
+    },
+    "lindo": {
+      "arquivo": "Terno_Rei_-_Dia_Lindo_Clipe_Oficial.mp3",
+      "vezes": 0
+    },
+    "clipe": {
+      "arquivo": "Terno_Rei_-_Dia_Lindo_Clipe_Oficial.mp3",
+      "vezes": 0
+    },
+    "oficial": {
+      "arquivo": "Terno_Rei_-_Dia_Lindo_Clipe_Oficial.mp3",
+      "vezes": 0
+    },
+    "consagracao": {
+      "arquivo": "CONSAGRA__O___Aline_Barros____Vers_o__pica_Orquestral.mp3",
+      "vezes": 1
+    }
+  }
 }
