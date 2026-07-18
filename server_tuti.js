@@ -360,6 +360,11 @@ timeout:120000
 },
 (err,stdout,stderr)=>{
 
+console.log("SCRIPT:", script);
+console.log("PARAM:", parametro);
+console.log("STDOUT:", stdout);
+console.log("STDERR:", stderr);
+
 resolve({
 
 ok: !err,
