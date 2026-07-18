@@ -14,7 +14,7 @@ mkdir -p "$TMP"
 
 yt-dlp \
   --js-runtimes deno \
-  --extractor-args "youtube:player_client=web,ios,android" \
+  --extractor-args "youtube:player_client=tv,web,ios,android" \
   --no-playlist \
   "$PEDIDO" \
   -f "bestaudio/best" \
