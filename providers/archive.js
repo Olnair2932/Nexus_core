@@ -1,40 +1,36 @@
 const axios = require("axios");
 
-const API = "https://archive.org/advancedsearch.php";
+const SEARCH_API = "https://archive.org/advancedsearch.php";
+const META_API = "https://archive.org/metadata";
 
 
 function normalizar(texto) {
 
     return String(texto || "")
         .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[\u0300-\u036f]/g,"")
         .toLowerCase()
         .trim();
 
 }
 
 
-function pareceRuido(titulo) {
+function ehPodcast(titulo, metadata) {
 
-    const bloqueados = [
-        "radio",
-        "forum",
+    const texto =
+        normalizar(
+            titulo + " " +
+            JSON.stringify(metadata || {})
+        );
+
+
+    return [
         "podcast",
         "episode",
         "episodio",
-        "news",
-        "interview",
-        "lecture",
-        "talk show",
-        "program",
-        "broadcast"
-    ];
-
-    const texto = normalizar(titulo);
-
-    return bloqueados.some(p =>
-        texto.includes(p)
-    );
+        "radio",
+        "rss"
+    ].some(x => texto.includes(x));
 
 }
 
@@ -46,89 +42,113 @@ async function buscar(pedido) {
 
         const termo = normalizar(pedido);
 
+        const querPodcast =
+            termo.includes("podcast") ||
+            termo.includes("episodio") ||
+            termo.includes("rss");
 
-        const resposta = await axios.get(API, {
 
-            params: {
 
-                q: `${termo} AND mediatype:audio`,
-
-                fl: [
-                    "identifier",
-                    "title"
-                ],
-
-                rows: 30,
-
-                output: "json"
-
-            },
-
-            timeout: 30000
-
-        });
-
+        const busca = await axios.get(
+            SEARCH_API,
+            {
+                params:{
+                    q:`${termo} AND mediatype:audio`,
+                    fl:["identifier","title"],
+                    rows:20,
+                    output:"json"
+                },
+                timeout:30000
+            }
+        );
 
 
         const docs =
-            resposta.data
-            ?.response
-            ?.docs || [];
+            busca.data?.response?.docs || [];
 
 
 
-        if (!docs.length) {
-
-            return null;
-
-        }
-
-
-
-        const item = docs.find(doc => {
+        for(const item of docs){
 
             const titulo =
-                doc.title || doc.identifier;
-
-            return !pareceRuido(titulo);
-
-        });
+                item.title ||
+                item.identifier;
 
 
 
-        if (!item) {
+            const meta =
+                await axios.get(
+                    `${META_API}/${item.identifier}`,
+                    {
+                        timeout:15000
+                    }
+                );
 
-            return null;
+
+            const arquivos =
+                meta.data?.files || [];
+
+
+
+            const audio =
+                arquivos.find(file => {
+
+                    const nome =
+                        String(file.name || "")
+                        .toLowerCase();
+
+
+                    return (
+                        /\.(mp3|ogg|wav|m4a)$/.test(nome) &&
+                        !file.private
+                    );
+
+                });
+
+
+
+            if(!audio) continue;
+
+
+
+            if(!querPodcast &&
+               ehPodcast(titulo, meta.data?.metadata)) {
+
+                continue;
+
+            }
+
+
+
+            return {
+
+                fonte:"archive",
+
+                titulo,
+
+                id:item.identifier,
+
+                arquivo:audio.name,
+
+                url:
+                `https://archive.org/download/${item.identifier}/${encodeURIComponent(audio.name)}`
+
+            };
+
 
         }
 
 
 
-        return {
-
-            fonte: "archive",
-
-            titulo:
-                item.title ||
-                item.identifier,
-
-            id:
-                item.identifier,
-
-            url:null
-
-        };
+        return null;
 
 
-
-    } catch(erro) {
-
+    } catch(e){
 
         console.log(
             "Archive erro:",
-            erro.message
+            e.message
         );
-
 
         return null;
 
