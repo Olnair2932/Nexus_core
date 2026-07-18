@@ -8,3 +8,15 @@ public/iiindex.html
 
 # Environment
 .env
+
+# Nexus generated files
+public/*.mp3
+public/*.webm
+public/*.m4a
+public/*.ogg
+public/*.log
+
+# Backups locais
+server_tuti_backup*
+server_tuti.backup*
+public/*backup*
