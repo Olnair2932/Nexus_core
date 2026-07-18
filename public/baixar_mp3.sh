@@ -4,30 +4,26 @@ PEDIDO="$1"
 
 echo "📡 Nexus detector: $PEDIDO"
 
-DESTINO="$(pwd)/public"
-
-mkdir -p "$DESTINO"
-
+DESTINO="$(pwd)"
 TMP=$(mktemp -d)
 
-python3 -m yt_dlp \
+yt-dlp \
   --js-runtimes deno \
+  --no-playlist \
   "ytsearch1:$PEDIDO" \
-  -x \
-  --audio-format mp3 \
-  --audio-quality 192K \
-  -o "$TMP/%(title)s.%(ext)s"
+  -f "bestaudio/best" \
+  -o "$TMP/%(title)s.%(ext)s" \
+  2>&1
 
-
-ARQUIVO=$(find "$TMP" -type f -name "*.mp3" | head -1)
-
+ARQUIVO=$(find "$TMP" -type f | head -1)
 
 if [ -z "$ARQUIVO" ]; then
-    echo "ERRO|arquivo não encontrado"
+    echo "ERRO|yt-dlp não conseguiu criar arquivo"
     rm -rf "$TMP"
     exit 1
 fi
 
+EXT="${ARQUIVO##*.}"
 
 NOVO_NOME=$(echo "$PEDIDO" \
 | tr '[:upper:]' '[:lower:]' \
@@ -35,14 +31,10 @@ NOVO_NOME=$(echo "$PEDIDO" \
 | sed 's/[^a-z0-9 ]//g' \
 | tr ' ' '_' )
 
-
-NOVO_NOME="${NOVO_NOME}.mp3"
-
+NOVO_NOME="${NOVO_NOME}.${EXT}"
 
 mv "$ARQUIVO" "$DESTINO/$NOVO_NOME"
 
-
 rm -rf "$TMP"
-
 
 echo "OK|$NOVO_NOME"
