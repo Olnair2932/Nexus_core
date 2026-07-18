@@ -30,7 +30,7 @@ fi
 
 yt-dlp \
   --js-runtimes deno \
-  --extractor-args "youtube:player_client=tv,web,ios,android" \
+  --extractor-args "youtube:player_client=web" \
   $COOKIES \
   --no-playlist \
   -x \
