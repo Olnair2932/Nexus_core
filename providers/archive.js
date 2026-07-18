@@ -14,7 +14,7 @@ function normalizar(texto) {
 }
 
 
-function parecePodcastOuRadio(titulo) {
+function pareceRuido(titulo) {
 
     const bloqueados = [
         "radio",
@@ -25,13 +25,16 @@ function parecePodcastOuRadio(titulo) {
         "news",
         "interview",
         "lecture",
-        "talk",
-        "program"
+        "talk show",
+        "program",
+        "broadcast"
     ];
 
     const texto = normalizar(titulo);
 
-    return bloqueados.some(p => texto.includes(p));
+    return bloqueados.some(p =>
+        texto.includes(p)
+    );
 
 }
 
@@ -55,35 +58,45 @@ async function buscar(pedido) {
                     "title"
                 ],
 
-                rows: 20,
+                rows: 30,
 
                 output: "json"
 
             },
 
-            timeout: 10000
+            timeout: 30000
 
         });
 
 
 
-        const docs = resposta.data
+        const docs =
+            resposta.data
             ?.response
             ?.docs || [];
 
 
 
-        const valido = docs.find(item => {
+        if (!docs.length) {
 
-            const titulo = item.title || item.identifier;
+            return null;
 
-            return !parecePodcastOuRadio(titulo);
+        }
+
+
+
+        const item = docs.find(doc => {
+
+            const titulo =
+                doc.title || doc.identifier;
+
+            return !pareceRuido(titulo);
 
         });
 
 
 
-        if (!valido) {
+        if (!item) {
 
             return null;
 
@@ -95,17 +108,20 @@ async function buscar(pedido) {
 
             fonte: "archive",
 
-            titulo: valido.title || valido.identifier,
+            titulo:
+                item.title ||
+                item.identifier,
 
-            id: valido.identifier,
+            id:
+                item.identifier,
 
-            url: null
+            url:null
 
         };
 
 
 
-    } catch (erro) {
+    } catch(erro) {
 
 
         console.log(
@@ -124,7 +140,7 @@ async function buscar(pedido) {
 
 module.exports = {
 
-    nome: "archive",
+    nome:"archive",
 
     buscar
 
