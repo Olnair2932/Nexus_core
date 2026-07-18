@@ -1,0 +1,18 @@
+                if(data.url) {
+
+                    document.getElementById('track-info').innerText =
+                        data.fonte.toUpperCase() + " : " +
+                        decodeURIComponent(data.url).split('/').pop();
+
+                    const p = document.getElementById('nexusPlayer');
+
+                    p.src = data.url;
+                    p.load();
+                    p.play().catch(()=>{});
+
+                } else if(data.fonte) {
+
+                    document.getElementById('track-info').innerText =
+                        data.fonte.toUpperCase() + " : RESULTADO EXTERNO";
+
+                }

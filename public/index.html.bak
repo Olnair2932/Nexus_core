@@ -190,7 +190,7 @@
             if (!user) return addMsg("Login necessário!", 'ai');
             await db.ref(`playlists/${user.uid}/${name.replace(/[.#$\[\]\/]/g,'_')}`).set({
                 name: name,
-                url: "/" + name,
+                url: "/" + encodeURIComponent(name),
                 date: Date.now()
             });
             addMsg(`⭐ ${name} salva no Firebase!`, 'ai');
