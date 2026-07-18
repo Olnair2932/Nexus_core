@@ -8,7 +8,7 @@ fi
 
 echo "📡 Nexus detector: $PEDIDO"
 
-DESTINO="$(pwd)"
+DESTINO="$(cd "$(dirname "$0")" && pwd)"
 TMP="$DESTINO/tmp_download"
 
 mkdir -p "$TMP"
@@ -47,7 +47,7 @@ if [ $? -eq 0 ]; then
 
         NOME=$(basename "$ARQUIVO")
 
-        cp "$ARQUIVO" "$DESTINO/public/$NOME"
+        cp "$ARQUIVO" "$DESTINO/$NOME"
 
         echo "OK|$NOME"
 
