@@ -8,7 +8,19 @@ function normalizar(texto) {
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
         .toLowerCase()
-        .replace(/[^a-z0-9]/g, "");
+        .replace(/[^a-z0-9 ]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+function limparPedido(texto) {
+    return normalizar(texto)
+        .replace(
+            /\b(tocar|toca|play|ouvir|escutar|quero|coloca|bota|musica|música)\b/g,
+            ""
+        )
+        .replace(/\s+/g, " ")
+        .trim();
 }
 
 function listar() {
@@ -26,11 +38,16 @@ function listar() {
 
 async function buscar(pedido) {
 
-    const busca = normalizar(pedido);
+    const busca = limparPedido(pedido);
 
     if (!busca) return null;
 
+    const palavras = busca
+        .split(" ")
+        .filter(p => p.length >= 3);
+
     const arquivos = listar();
+
 
     const encontrado = arquivos.find(arquivo => {
 
@@ -38,13 +55,18 @@ async function buscar(pedido) {
             arquivo.replace(/\.[^/.]+$/, "")
         );
 
-        return nome.includes(busca) ||
-               busca.includes(nome);
+
+        return palavras.some(palavra =>
+            nome.includes(palavra)
+        );
+
     });
+
 
     if (!encontrado) {
         return null;
     }
+
 
     return {
         fonte: "local",
@@ -53,6 +75,7 @@ async function buscar(pedido) {
         url: "/" + encodeURIComponent(encontrado)
     };
 }
+
 
 module.exports = {
     nome: "local",
