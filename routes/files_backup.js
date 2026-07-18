@@ -9,18 +9,10 @@ const BASE_DIR = path.join(__dirname,"../public");
 
 function arquivos(){
 
-    if(!fs.existsSync(BASE_DIR)){
-        return [];
-    }
-
     return fs.readdirSync(BASE_DIR)
-        .filter(f => {
-
-            if(f.startsWith(".")) return false;
-
-            return /\.(mp3|mp4|webm|m4a|ogg|wav)$/i.test(f);
-
-        });
+        .filter(f =>
+            /\.(mp3|mp4|webm|m4a|ogg)$/i.test(f)
+        );
 
 }
 
