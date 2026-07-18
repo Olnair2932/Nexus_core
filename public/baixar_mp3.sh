@@ -9,11 +9,20 @@ TMP=$(mktemp -d)
 
 yt-dlp \
   --js-runtimes deno \
+  --extractor-args "youtube:player_client=android" \
   --no-playlist \
   "ytsearch1:$PEDIDO" \
   -f "bestaudio/best" \
   -o "$TMP/%(title)s.%(ext)s" \
   2>&1
+
+STATUS=$?
+
+if [ $STATUS -ne 0 ]; then
+    echo "ERRO|yt-dlp falhou"
+    rm -rf "$TMP"
+    exit 1
+fi
 
 ARQUIVO=$(find "$TMP" -type f | head -1)
 
