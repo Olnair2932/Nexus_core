@@ -1,7 +1,11 @@
 services:
   - type: web
     name: nexus-core
-    runtime: node
-    plan: free
-    buildCommand: npm install
+    env: node
+    buildCommand: |
+      npm install
+      pip install yt-dlp
     startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 10000
