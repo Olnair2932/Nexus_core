@@ -3,9 +3,12 @@ services:
     name: nexus-core
     env: node
     buildCommand: |
+      echo "NEXUS BUILD TEST"
       npm install
       apt-get update && apt-get install -y deno
+      deno --version
       python3 -m pip install yt-dlp
+      yt-dlp --version
     startCommand: npm start
     envVars:
       - key: PORT
