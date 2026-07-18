@@ -1,7 +1,9 @@
 const local = require("../providers/local");
+const archive = require("../providers/archive");
 
 const providers = [
-    local
+    local,
+    archive
 ];
 
 async function buscarMusica(pedido) {
