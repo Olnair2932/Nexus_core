@@ -6,12 +6,51 @@ const axios = require("axios");
 const { exec } = require("child_process");
 const path = require("path");
 const fs = require("fs");
+const { google } = require("googleapis");
 
 const app = express();
 
 const PORT = process.env.PORT || 10000;
 const BASE_DIR = path.join(__dirname, "public");
 const LOG = path.join(BASE_DIR,"nexus_brain.log");
+
+const youtube = google.youtube({
+    version: "v3",
+    auth: process.env.YOUTUBE_API_KEY
+});
+
+
+async function buscarYoutube(pedido){
+
+    const resposta = await youtube.search.list({
+
+        part:"snippet",
+        q:pedido,
+        type:"video",
+        maxResults:1
+
+    });
+
+
+    if(!resposta.data.items.length){
+
+        return null;
+
+    }
+
+
+    const video = resposta.data.items[0];
+
+
+    return {
+
+        id: video.id.videoId,
+        titulo: video.snippet.title
+
+    };
+
+}
+
 
 if(!fs.existsSync(BASE_DIR)){
     fs.mkdirSync(BASE_DIR,{recursive:true});
@@ -439,10 +478,28 @@ resposta =
 
 
 acao = "baixar_musica";
-parametro = pedido;
 
-resposta =
-"Arquivo não encontrado. Baixando.";
+
+const video = await buscarYoutube(pedido);
+
+
+if(video){
+
+    parametro =
+    `https://www.youtube.com/watch?v=${video.id}`;
+
+    resposta =
+    "Arquivo encontrado no YouTube. Baixando.";
+
+}else{
+
+    parametro = pedido;
+
+    resposta =
+    "YouTube não encontrou. Tentando busca local.";
+
+}
+
 
 }
 
