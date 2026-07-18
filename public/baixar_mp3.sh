@@ -10,5 +10,33 @@ echo "📡 Nexus detector: $PEDIDO"
 
 DESTINO="$(pwd)"
 TMP="$(pwd)/tmp_download"
+
 mkdir -p "$TMP"
 
+URL="$PEDIDO"
+
+yt-dlp \
+  --js-runtimes deno \
+  --extractor-args "youtube:player_client=tv,web,ios,android" \
+  --no-playlist \
+  -x \
+  --audio-format mp3 \
+  --audio-quality 0 \
+  -o "$TMP/%(title)s.%(ext)s" \
+  "$URL"
+
+if [ $? -eq 0 ]; then
+    ARQUIVO=$(find "$TMP" -type f -name "*.mp3" | head -n 1)
+
+    if [ -n "$ARQUIVO" ]; then
+        NOME=$(basename "$ARQUIVO")
+        cp "$ARQUIVO" "$DESTINO/public/$NOME"
+        echo "OK|$NOME"
+    else
+        echo "ERRO|mp3 não encontrado"
+        exit 1
+    fi
+else
+    echo "ERRO|yt-dlp falhou"
+    exit 1
+fi
