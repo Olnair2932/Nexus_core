@@ -11,7 +11,7 @@ yt-dlp \
   --js-runtimes deno \
   --extractor-args "youtube:player_client=android" \
   --no-playlist \
-  "ytsearch1:$PEDIDO" \
+  "$PEDIDO" \
   -f "bestaudio/best" \
   -o "$TMP/%(title)s.%(ext)s" \
   2>&1
