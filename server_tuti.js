@@ -114,9 +114,21 @@ function procurarBrain(pedido){
 
     const brain = carregarBrain();
 
-    const chave = normalizarBusca(pedido);
+    const busca = normalizar(pedido)
+        .split(" ")
+        .filter(p=>p.length>=3);
 
-    return brain.musicas[chave] || null;
+    for(const chave in brain.musicas){
+
+        if(busca.some(p=>chave.includes(p) || p.includes(chave))){
+
+            return brain.musicas[chave];
+
+        }
+
+    }
+
+    return null;
 
 }
 
@@ -189,6 +201,54 @@ function encontrarMusica(pedido){
 
 }
 
+
+
+// ==============================
+// INDEXADOR AUTOMATICO DA BIBLIOTECA
+// ==============================
+
+function indexarBiblioteca(){
+
+    const brain = {
+        musicas:{}
+    };
+
+    const lista = arquivos();
+
+    lista.forEach(arq=>{
+
+        const base = arq
+            .replace(/\.[^/.]+$/,"");
+
+        const palavras = normalizar(base)
+            .split(" ")
+            .filter(p => p.length >= 4);
+
+        palavras.forEach(p=>{
+
+            const chave = p
+                .replace(/[^a-z0-9]/g,"")
+                .trim();
+
+            if(chave){
+
+                brain.musicas[chave] = {
+                    arquivo: arq,
+                    vezes: brain.musicas[chave]?.vezes || 0
+                };
+
+            }
+
+        });
+
+    });
+
+    salvarBrain(brain);
+
+}
+
+
+// ==============================
 
 // ==============================
 // MEMÓRIA
@@ -504,6 +564,8 @@ porta:PORT
 // ==============================
 // START SERVER
 // ==============================
+
+indexarBiblioteca();
 
 app.listen(PORT,"0.0.0.0",()=>{
 
