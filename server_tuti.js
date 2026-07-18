@@ -60,11 +60,110 @@ function biblioteca(){
 }
 
 
+
+// ==============================
+// MUSIC BRAIN
+// ==============================
+
+const BRAIN_FILE = path.join(BASE_DIR,"music_memory.json");
+
+
+function carregarBrain(){
+
+    try{
+
+        return JSON.parse(
+            fs.readFileSync(BRAIN_FILE,"utf8")
+        );
+
+    }catch{
+
+        return {
+            musicas:{}
+        };
+
+    }
+
+}
+
+
+function salvarBrain(brain){
+
+    try{
+
+        fs.writeFileSync(
+            BRAIN_FILE,
+            JSON.stringify(brain,null,2)
+        );
+
+    }catch{}
+
+}
+
+
+function normalizarBusca(txt){
+
+    return normalizar(txt)
+    .replace(/[^a-z0-9]/g,"")
+    .trim();
+
+}
+
+
+function procurarBrain(pedido){
+
+    const brain = carregarBrain();
+
+    const chave = normalizarBusca(pedido);
+
+    return brain.musicas[chave] || null;
+
+}
+
+
+function aprenderMusica(pedido,arquivo){
+
+    const brain = carregarBrain();
+
+    const chave = normalizarBusca(pedido);
+
+    if(!chave) return;
+
+
+    if(!brain.musicas[chave]){
+
+        brain.musicas[chave] = {
+            arquivo: arquivo,
+            vezes: 1
+        };
+
+    }else{
+
+        brain.musicas[chave].arquivo = arquivo;
+        brain.musicas[chave].vezes++;
+
+    }
+
+
+    salvarBrain(brain);
+
+}
+
+
 // ==============================
 // BUSCA MUSICAL
 // ==============================
 
 function encontrarMusica(pedido){
+
+    const aprendida = procurarBrain(pedido);
+
+    if(aprendida){
+
+        return aprendida.arquivo;
+
+    }
+
 
     const busca = normalizar(pedido)
         .replace(/[^a-z0-9]/g,"")
@@ -260,6 +359,8 @@ let resposta;
 
 
 if(encontrado){
+
+aprenderMusica(pedido,encontrado);
 
 
 acao = "tocar_musica";
