@@ -18,7 +18,7 @@ URL="$PEDIDO"
 COOKIES=""
 
 if [ -n "$YOUTUBE_COOKIES" ]; then
-    echo "$YOUTUBE_COOKIES" > "$DESTINO/cookies.txt"
+    printf "%s\n" "$YOUTUBE_COOKIES" > "$DESTINO/cookies.txt"
 fi
 
 if [ -f "$DESTINO/cookies.txt" ]; then
