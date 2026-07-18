@@ -1,14 +1,32 @@
 const local = require("../providers/local");
 const archive = require("../providers/archive");
-
-const providers = [
-    local,
-    archive
-];
+const podcast = require("../providers/podcast");
 
 async function buscarMusica(pedido) {
 
-    for (const provider of providers) {
+    const texto = String(pedido || "").toLowerCase();
+
+    let ordem = [
+        local,
+        archive
+    ];
+
+    if (
+        texto.includes("podcast") ||
+        texto.includes("rss") ||
+        texto.includes("episodio")
+    ) {
+        ordem = [
+            local,
+            podcast,
+            archive
+        ];
+    } else {
+        ordem.push(podcast);
+    }
+
+
+    for (const provider of ordem) {
 
         try {
 
@@ -31,9 +49,15 @@ async function buscarMusica(pedido) {
     return null;
 }
 
+
 function listarProvedores() {
-    return providers.map(p => p.nome);
+    return [
+        "local",
+        "archive",
+        "podcast"
+    ];
 }
+
 
 module.exports = {
     buscarMusica,
