@@ -1,28 +1,36 @@
 const local = require("../providers/local");
-const archive = require("../providers/archive");
 const podcast = require("../providers/podcast");
+const archive = require("../providers/archive");
+
 
 async function buscarMusica(pedido) {
 
     const texto = String(pedido || "").toLowerCase();
 
-    let ordem = [
-        local,
-        archive
-    ];
+    let ordem;
+
 
     if (
         texto.includes("podcast") ||
         texto.includes("rss") ||
-        texto.includes("episodio")
+        texto.includes("episodio") ||
+        texto.includes("episódio")
     ) {
+
         ordem = [
             local,
             podcast,
             archive
         ];
+
     } else {
-        ordem.push(podcast);
+
+        ordem = [
+            local,
+            podcast,
+            archive
+        ];
+
     }
 
 
@@ -33,29 +41,36 @@ async function buscarMusica(pedido) {
             const resultado = await provider.buscar(pedido);
 
             if (resultado) {
+
                 return resultado;
+
             }
 
         } catch (erro) {
 
             console.log(
-                `Erro no provider ${provider.nome}:`,
+                `Erro no provider ${provider.nome || "desconhecido"}:`,
                 erro.message
             );
 
         }
+
     }
 
+
     return null;
+
 }
 
 
 function listarProvedores() {
+
     return [
         "local",
-        "archive",
-        "podcast"
+        "podcast",
+        "archive"
     ];
+
 }
 
 
