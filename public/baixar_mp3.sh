@@ -1,58 +1,49 @@
-#!/bin/bash
-set -Eeuo pipefail
+#!/data/data/com.termux/files/usr/bin/bash
 
-DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT="$(cd "$DIR/.." && pwd)"
-YTDLP="$ROOT/bin/yt-dlp"
+PEDIDO="$1"
 
-BUSCA="${*:-}"
+echo "📡 Nexus detector: $PEDIDO"
 
-if [ -z "$BUSCA" ]; then
-    echo "ERRO|Busca vazia"
-    exit 1
-fi
+DESTINO="$(pwd)/public"
+
+mkdir -p "$DESTINO"
 
 TMP=$(mktemp -d)
-trap 'rm -rf "$TMP"' EXIT
 
-echo "📡 Nexus detector: $BUSCA" >&2
 
-"$YTDLP" \
-"ytsearch1:$BUSCA" \
---no-playlist \
--f "bestaudio/best" \
---no-check-certificate \
--o "$TMP/%(title)s.%(ext)s"
+yt-dlp \
+  "ytsearch1:$PEDIDO" \
+  -f bestaudio \
+  -o "$TMP/%(title)s.%(ext)s"
 
-ARQ=$(find "$TMP" -type f | head -n1)
 
-if [ -z "$ARQ" ]; then
-    echo "ERRO|Arquivo não encontrado"
+ARQUIVO=$(find "$TMP" -type f | head -1)
+
+
+if [ -z "$ARQUIVO" ]; then
+    echo "ERRO|arquivo não encontrado"
+    rm -rf "$TMP"
     exit 1
 fi
 
-NOME=$(basename "$ARQ")
-LIMPO=$(echo "$NOME" | sed 's/[^A-Za-z0-9._-]/_/g')
 
-if command -v ffmpeg >/dev/null; then
+EXT="${ARQUIVO##*.}"
 
-    SAIDA="${LIMPO%.*}.mp3"
 
-    ffmpeg -y \
-    -i "$ARQ" \
-    -vn \
-    -codec:a libmp3lame \
-    "$DIR/$SAIDA" >/dev/null 2>&1
+NOVO_NOME=$(echo "$PEDIDO" \
+| tr '[:upper:]' '[:lower:]' \
+| sed 'y/áàãâäéèêëíìîïóòõôöúùûüç/aaaaaeeeeiiiiooooouuuuc/' \
+| sed 's/[^a-z0-9 ]//g' \
+| tr ' ' '_' )
 
-    chmod 644 "$DIR/$SAIDA"
 
-    echo "OK|$SAIDA"
+NOVO_NOME="${NOVO_NOME}.${EXT}"
 
-else
 
-    mv "$ARQ" "$DIR/$LIMPO"
-    chmod 644 "$DIR/$LIMPO"
+mv "$ARQUIVO" "$DESTINO/$NOVO_NOME"
 
-    echo "OK|$LIMPO"
 
-fi
+rm -rf "$TMP"
+
+
+echo "OK|$NOVO_NOME"
