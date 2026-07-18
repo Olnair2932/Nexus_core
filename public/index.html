@@ -210,9 +210,22 @@
                 const data = await response.json();
                 addMsg(data.nexus, 'ai');
                 if(data.url) {
-                    document.getElementById('track-info').innerText = "PLAYING: " + decodeURIComponent(data.url).split('/').pop();
+
+                    document.getElementById('track-info').innerText =
+                        data.fonte.toUpperCase() + " : " +
+                        decodeURIComponent(data.url).split('/').pop();
+
                     const p = document.getElementById('nexusPlayer');
-                    p.src = data.url; p.load(); p.play().catch(()=>{});
+
+                    p.src = data.url;
+                    p.load();
+                    p.play().catch(()=>{});
+
+                } else if(data.fonte) {
+
+                    document.getElementById('track-info').innerText =
+                        data.fonte.toUpperCase() + " : RESULTADO EXTERNO";
+
                 }
                 setTimeout(() => currentTab === 'lib' ? loadLibrary() : loadPlaylist(), 2000);
             } catch (e) { addMsg("Erro de conexão.", 'ai'); }
