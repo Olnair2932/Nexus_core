@@ -11,7 +11,7 @@ mkdir -p "$DESTINO"
 TMP=$(mktemp -d)
 
 
-yt-dlp \
+python3 -m yt_dlp \
   "ytsearch1:$PEDIDO" \
   -f bestaudio \
   -o "$TMP/%(title)s.%(ext)s"
