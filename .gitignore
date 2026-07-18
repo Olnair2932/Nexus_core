@@ -20,3 +20,4 @@ public/*.log
 server_tuti_backup*
 server_tuti.backup*
 public/*backup*
+public/music_memory.json
