@@ -485,8 +485,7 @@ const video = await buscarYoutube(pedido);
 
 if(video){
 
-    parametro =
-    `https://www.youtube.com/watch?v=${video.id}`;
+    parametro = video.id;
 
     resposta =
     `🎵 Encontrado no YouTube: ${video.titulo}`;
