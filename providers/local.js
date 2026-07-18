@@ -17,18 +17,23 @@ function listar() {
     }
 
     return fs.readdirSync(BASE_DIR)
-        .filter(arquivo =>
-            /\.(mp3|m4a|ogg|wav|webm)$/i.test(arquivo)
-        );
+        .filter(arquivo => {
+            if (arquivo.startsWith(".")) return false;
+
+            return /\.(mp3|m4a|ogg|wav|webm)$/i.test(arquivo);
+        });
 }
 
 async function buscar(pedido) {
 
     const busca = normalizar(pedido);
 
+    if (!busca) return null;
+
     const arquivos = listar();
 
     const encontrado = arquivos.find(arquivo => {
+
         const nome = normalizar(
             arquivo.replace(/\.[^/.]+$/, "")
         );
