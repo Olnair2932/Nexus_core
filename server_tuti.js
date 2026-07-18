@@ -481,7 +481,9 @@ if(execucao.stdout.includes("OK|")){
 
 const arquivo =
 execucao.stdout
-.split("OK|")[1]
+.split("\n")
+.find(l => l.startsWith("OK|"))
+?.replace("OK|","")
 .trim();
 
 
