@@ -4,7 +4,7 @@ services:
     env: node
     buildCommand: |
       npm install
-      python3 -m pip install --user yt-dlp
+      python3 -m pip install yt-dlp
     startCommand: npm start
     envVars:
       - key: PORT
