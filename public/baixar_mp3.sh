@@ -17,6 +17,10 @@ URL="$PEDIDO"
 
 COOKIES=""
 
+if [ -n "$YOUTUBE_COOKIES" ]; then
+    echo "$YOUTUBE_COOKIES" > "$DESTINO/cookies.txt"
+fi
+
 if [ -f "$DESTINO/cookies.txt" ]; then
     COOKIES="--cookies $DESTINO/cookies.txt"
     echo "🍪 Cookies YouTube encontrados"
