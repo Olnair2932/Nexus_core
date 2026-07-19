@@ -12,20 +12,29 @@ const { listarProvedores } = require("./services/music");
 const chatRoute = require("./routes/chat");
 const filesRoute = require("./routes/files");
 const statusRoute = require("./routes/status");
+const youtubeRoute = require("./routes/youtube");
 
 
 const app = express();
 
 
-const PORT = process.env.PORT || 10000;
-
-const BASE_DIR = path.join(__dirname,"public");
-
+const PORT =
+    process.env.PORT || 10000;
 
 
-if(!fs.existsSync(BASE_DIR)){
+const BASE_DIR =
+    path.join(__dirname,"public");
 
-    fs.mkdirSync(BASE_DIR,{recursive:true});
+
+
+if (!fs.existsSync(BASE_DIR)) {
+
+    fs.mkdirSync(
+        BASE_DIR,
+        {
+            recursive:true
+        }
+    );
 
 }
 
@@ -41,20 +50,26 @@ app.use(express.static(BASE_DIR));
 
 // ROTAS
 
-app.use("/api",chatRoute);
-app.use("/api",filesRoute);
-app.use("/api",statusRoute);
+app.use("/api", chatRoute);
+
+app.use("/api", filesRoute);
+
+app.use("/api", statusRoute);
+
+app.use("/api", youtubeRoute);
 
 
 
 
 
-app.listen(PORT,"0.0.0.0",()=>{
+app.listen(
+    PORT,
+    "0.0.0.0",
+    () => {
 
+        console.log(
+            `🚀 NEXUS MULTIFONTE ONLINE PORT ${PORT}`
+        );
 
-    console.log(
-        `🚀 NEXUS MULTIFONTE ONLINE PORT ${PORT}`
-    );
-
-
-});
+    }
+);
