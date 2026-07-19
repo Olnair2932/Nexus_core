@@ -2,33 +2,11 @@ const local = require("../providers/local");
 const podcast = require("../providers/podcast");
 const archive = require("../providers/archive");
 
-const {
-    salvarMusica,
-    procurarMemoria
-} = require("./music_memory");
-
-
 
 async function buscarMusica(pedido) {
 
     const texto = String(pedido || "")
         .toLowerCase();
-
-
-    // Primeiro procura na memória do NEXUS
-    const memoria = procurarMemoria(texto);
-
-    if (memoria) {
-
-        console.log(
-            "🎵 Encontrado na memória:",
-            memoria.arquivo || memoria.titulo
-        );
-
-        return memoria;
-
-    }
-
 
 
     let ordem;
@@ -70,10 +48,6 @@ async function buscarMusica(pedido) {
 
             if (resultado) {
 
-                // Salva automaticamente na biblioteca
-                salvarMusica(resultado);
-
-
                 return resultado;
 
             }
@@ -94,7 +68,6 @@ async function buscarMusica(pedido) {
     return null;
 
 }
-
 
 
 
