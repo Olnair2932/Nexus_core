@@ -202,7 +202,7 @@ async function salvarPlaylistFirebase(musica, uid) {
 
 
     await db
-        .ref(`playlists/${uid}/${chave}`)
+        .ref(`historico/${uid}/${chave}`)
         .set({
 
 
