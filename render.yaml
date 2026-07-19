@@ -8,13 +8,12 @@ services:
       npm install
       apt-get update && apt-get install -y deno
       deno --version
-      python3 -m pip install -U yt-dlp
-      yt-dlp --version
 
     startCommand: npm start
 
     envVars:
       - key: PORT
         value: 10000
+
       - key: PATH
         value: /usr/local/bin:/usr/bin:/bin
