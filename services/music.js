@@ -1,6 +1,7 @@
 const local = require("../providers/local");
 const podcast = require("../providers/podcast");
 const archive = require("../providers/archive");
+const youtube = require("../providers/youtube");
 
 const {
     salvarMusica,
@@ -72,7 +73,8 @@ async function buscarMusica(pedido) {
         ordem = [
             local,
             podcast,
-            archive
+            archive,
+            youtube
         ];
 
 
@@ -82,7 +84,8 @@ async function buscarMusica(pedido) {
         ordem = [
             local,
             archive,
-            podcast
+            podcast,
+            youtube
         ];
 
     }
@@ -148,17 +151,20 @@ async function buscarMusica(pedido) {
 
 
 
+
 function listarProvedores() {
 
 
     return [
         "local",
         "archive",
-        "podcast"
+        "podcast",
+        "youtube"
     ];
 
 
 }
+
 
 
 
