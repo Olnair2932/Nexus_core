@@ -3,9 +3,7 @@ const path = require("path");
 
 const BASE_DIR = path.join(__dirname, "..", "public");
 
-
 function normalizar(texto) {
-
     return String(texto || "")
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
@@ -13,12 +11,9 @@ function normalizar(texto) {
         .replace(/[^a-z0-9 ]/g, " ")
         .replace(/\s+/g, " ")
         .trim();
-
 }
 
-
 function limparPedido(texto) {
-
     return normalizar(texto)
         .replace(
             /\b(tocar|toca|play|ouvir|escutar|quero|coloca|bota|musica|música)\b/g,
@@ -26,24 +21,20 @@ function limparPedido(texto) {
         )
         .replace(/\s+/g, " ")
         .trim();
-
 }
 
-
 function listar() {
-
     if (!fs.existsSync(BASE_DIR)) {
         return [];
     }
 
     return fs.readdirSync(BASE_DIR)
-        .filter(arquivo =>
-            /\.(mp3|m4a|ogg|wav|webm)$/i.test(arquivo)
-        );
+        .filter(arquivo => {
+            if (arquivo.startsWith(".")) return false;
 
+            return /\.(mp3|m4a|ogg|wav|webm)$/i.test(arquivo);
+        });
 }
-
-
 
 async function buscar(pedido) {
 
@@ -51,49 +42,25 @@ async function buscar(pedido) {
 
     if (!busca) return null;
 
+    const palavras = busca
+        .split(" ")
+        .filter(p => p.length >= 3);
 
     const arquivos = listar();
 
 
-    // 1 - busca exata pelo nome completo
-    let encontrado = arquivos.find(arquivo => {
+    const encontrado = arquivos.find(arquivo => {
 
         const nome = normalizar(
             arquivo.replace(/\.[^/.]+$/, "")
         );
 
-        return nome.includes(busca);
+
+        return palavras.some(palavra =>
+            nome.includes(palavra)
+        );
 
     });
-
-
-
-    // 2 - busca por conjunto de palavras
-    if (!encontrado) {
-
-        const palavras = busca
-            .split(" ")
-            .filter(p => p.length >= 3);
-
-
-        encontrado = arquivos.find(arquivo => {
-
-            const nome = normalizar(
-                arquivo.replace(/\.[^/.]+$/, "")
-            );
-
-
-            const acertos = palavras.filter(
-                palavra => nome.includes(palavra)
-            );
-
-
-            return acertos.length >= Math.min(2, palavras.length);
-
-        });
-
-    }
-
 
 
     if (!encontrado) {
@@ -101,30 +68,17 @@ async function buscar(pedido) {
     }
 
 
-
     return {
-
         fonte: "local",
-
         titulo: encontrado,
-
         arquivo: encontrado,
-
-        url:
-            "/" + encodeURIComponent(encontrado)
-
+        url: "/" + encodeURIComponent(encontrado)
     };
-
 }
 
 
-
 module.exports = {
-
     nome: "local",
-
     buscar,
-
     listar
-
 };
