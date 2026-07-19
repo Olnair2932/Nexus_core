@@ -4,6 +4,10 @@ const archive = require("../providers/archive");
 const youtube = require("../providers/youtube");
 
 const {
+    criarStream
+} = require("./youtube_stream");
+
+const {
     salvarMusica,
     procurarMemoria,
     salvarPlaylistFirebase
@@ -20,12 +24,10 @@ async function buscarMusica(pedido) {
             : pedido;
 
 
-
     const uid =
         typeof pedido === "object"
             ? pedido.uid
             : null;
-
 
 
     const gemini =
@@ -65,9 +67,7 @@ async function buscarMusica(pedido) {
 
 
 
-
     let ordem = [];
-
 
 
     const preferencia =
@@ -84,6 +84,7 @@ async function buscarMusica(pedido) {
             podcast
         ];
 
+
     } else if (preferencia === "podcast") {
 
         ordem = [
@@ -93,6 +94,7 @@ async function buscarMusica(pedido) {
             youtube
         ];
 
+
     } else if (preferencia === "local") {
 
         ordem = [
@@ -101,6 +103,7 @@ async function buscarMusica(pedido) {
             youtube,
             podcast
         ];
+
 
     } else {
 
@@ -138,16 +141,28 @@ async function buscarMusica(pedido) {
 
     for (const provider of ordem) {
 
-
         try {
 
 
-            const resultado =
+            let resultado =
                 await provider.buscar(texto);
 
 
 
             if (resultado) {
+
+
+                if (
+                    resultado.fonte === "youtube"
+                ) {
+
+                    resultado =
+                        await criarStream(
+                            resultado
+                        );
+
+                }
+
 
 
                 salvarMusica(resultado);
@@ -182,7 +197,6 @@ async function buscarMusica(pedido) {
 
         }
 
-
     }
 
 
@@ -190,7 +204,6 @@ async function buscarMusica(pedido) {
     return null;
 
 }
-
 
 
 
