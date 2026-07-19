@@ -2,19 +2,12 @@ const express = require("express");
 
 const router = express.Router();
 
-const {
-    buscarMusica
-} = require("../services/music");
+const { buscarMusica } = require("../services/music");
 
 const path = require("path");
 const fs = require("fs");
 
-
-const LOG = path.join(
-    __dirname,
-    "../public/nexus_brain.log"
-);
-
+const LOG = path.join(__dirname,"../public/nexus_brain.log");
 
 
 function salvarLog(texto){
@@ -37,18 +30,14 @@ router.post("/chat", async(req,res)=>{
     const texto = req.body.texto || "";
 
 
-    const resultado =
-        await buscarMusica(texto);
-
+    const resultado = await buscarMusica(texto);
 
 
     let retorno = {
 
         nexus:"",
         fonte:null,
-        url:null,
-        arquivo:null,
-        memoria:false
+        url:null
 
     };
 
@@ -57,40 +46,18 @@ router.post("/chat", async(req,res)=>{
     if(resultado){
 
 
-        retorno.fonte =
-            resultado.fonte;
-
-
-        retorno.url =
-            resultado.url || null;
-
-
-        retorno.arquivo =
-            resultado.arquivo || null;
-
-
-
-        if(resultado.adicionada){
-
-            retorno.memoria = true;
-
-        }
+        retorno.fonte = resultado.fonte;
 
 
 
         if(resultado.url){
 
-            if(retorno.memoria){
 
-                retorno.nexus =
-                    `🎵 Recuperado da biblioteca: ${resultado.titulo}`;
+            retorno.url = resultado.url;
 
-            }else{
 
-                retorno.nexus =
-                    `🎵 Encontrado em ${resultado.fonte}: ${resultado.titulo}`;
-
-            }
+            retorno.nexus =
+                `🎵 Encontrado em ${resultado.fonte}: ${resultado.titulo}`;
 
 
         }else{
