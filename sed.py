@@ -4,31 +4,82 @@ arquivo = Path("public/index.html")
 
 texto = arquivo.read_text(encoding="utf-8")
 
-# adiciona API do YouTube antes do fechamento do head
-marcador = "</head>"
+antigo = """                if(data.url) {
 
-youtube_api = """
-<script src="https://www.youtube.com/iframe_api"></script>
+                    document.getElementById('track-info').innerText =
+                        data.fonte.toUpperCase() + " : " +
+                        decodeURIComponent(data.url).split('/').pop();
+
+                    const p = document.getElementById('nexusPlayer');
+
+                    p.src = data.url;
+                    p.load();
+                    p.play().catch(()=>{});
+
+                } else if(data.fonte) {
 """
 
-if youtube_api.strip() not in texto:
-    texto = texto.replace(marcador, youtube_api + "\n" + marcador)
+novo = """                if(data.videoId) {
+
+                    document.getElementById('track-info').innerText =
+                        "YOUTUBE : " + data.videoId;
+
+                    const audio =
+                        document.getElementById('nexusPlayer');
+
+                    audio.pause();
+                    audio.style.display = "none";
+
+                    const yt =
+                        document.getElementById('youtubePlayer');
+
+                    yt.style.display = "block";
+
+                    if(window.nexusYT) {
+                        window.nexusYT.loadVideoById(data.videoId);
+                    } else {
+
+                        window.nexusYT =
+                            new YT.Player('youtubePlayer', {
+                                height: '180',
+                                width: '100%',
+                                videoId: data.videoId,
+                                playerVars: {
+                                    autoplay: 1
+                                }
+                            });
+
+                    }
 
 
-# adiciona container do player youtube após o player de audio
-marcador_player = '<audio id="nexusPlayer" controls style="width:100%;height:30px"></audio>'
+                } else if(data.url) {
 
-youtube_box = """
-<div id="youtubePlayer" style="display:none;width:100%;height:180px;"></div>
+                    const yt =
+                        document.getElementById('youtubePlayer');
+
+                    yt.style.display = "none";
+
+                    const audio =
+                        document.getElementById('nexusPlayer');
+
+                    audio.style.display = "block";
+
+                    document.getElementById('track-info').innerText =
+                        data.fonte.toUpperCase() + " : " +
+                        decodeURIComponent(data.url).split('/').pop();
+
+                    audio.src = data.url;
+                    audio.load();
+                    audio.play().catch(()=>{});
+
+                } else if(data.fonte) {
 """
 
-if youtube_box.strip() not in texto:
-    texto = texto.replace(
-        marcador_player,
-        marcador_player + youtube_box
-    )
+if antigo not in texto:
+    raise SystemExit("Bloco antigo não encontrado")
 
+texto = texto.replace(antigo, novo)
 
 arquivo.write_text(texto, encoding="utf-8")
 
-print("index.html atualizado com suporte inicial YouTube")
+print("send() atualizado para player duplo")
