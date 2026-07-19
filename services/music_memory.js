@@ -1,5 +1,7 @@
 const fs = require("fs");
 const path = require("path");
+const db = require("./firebase_admin");
+
 
 const FILE = path.join(
     __dirname,
@@ -7,21 +9,23 @@ const FILE = path.join(
 );
 
 
+
 function carregarMemoria() {
 
     if (!fs.existsSync(FILE)) {
+
         return {
             musicas: {}
         };
+
     }
 
 
     try {
 
-        const dados =
-            JSON.parse(
-                fs.readFileSync(FILE, "utf8")
-            );
+        const dados = JSON.parse(
+            fs.readFileSync(FILE, "utf8")
+        );
 
 
         return dados.musicas
@@ -35,6 +39,7 @@ function carregarMemoria() {
             "Erro lendo memória musical:",
             erro.message
         );
+
 
         return {
             musicas: {}
@@ -87,9 +92,10 @@ function salvarMusica(musica) {
     const memoria = carregarMemoria();
 
 
-
     if (!memoria.musicas) {
+
         memoria.musicas = {};
+
     }
 
 
@@ -122,7 +128,60 @@ function salvarMusica(musica) {
 
 
 
+
+async function salvarPlaylistFirebase(musica, uid) {
+
+    if (!uid || !musica) return;
+
+
+    const arquivo =
+        musica.arquivo ||
+        musica.file ||
+        musica.titulo;
+
+
+    if (!arquivo) return;
+
+
+
+    const chave =
+        arquivo.replace(/[.#$\[\]\/]/g, "_");
+
+
+
+    await db
+        .ref(`playlists/${uid}/${chave}`)
+        .set({
+
+            name: arquivo,
+
+            url:
+                musica.url ||
+                "/" + encodeURIComponent(arquivo),
+
+            fonte:
+                musica.fonte || "local",
+
+            date:
+                Date.now()
+
+        });
+
+
+
+    console.log(
+        "☁️ Música salva no Firebase:",
+        arquivo
+    );
+
+}
+
+
+
+
+
 function procurarMemoria(texto) {
+
 
     const palavras = String(texto || "")
         .normalize("NFD")
@@ -140,22 +199,28 @@ function procurarMemoria(texto) {
 
     for (const palavra of palavras) {
 
+
         const item =
             memoria.musicas?.[palavra];
 
 
+
         if (item?.arquivo) {
+
 
             return {
 
                 fonte: "memoria",
 
-                titulo: item.arquivo,
+                titulo:
+                    item.arquivo,
 
-                arquivo: item.arquivo,
+                arquivo:
+                    item.arquivo,
 
                 url:
-                    "/" + encodeURIComponent(item.arquivo),
+                    "/" +
+                    encodeURIComponent(item.arquivo),
 
                 adicionada: true
 
@@ -166,9 +231,12 @@ function procurarMemoria(texto) {
     }
 
 
+
     return null;
 
 }
+
+
 
 
 
@@ -178,6 +246,8 @@ module.exports = {
 
     salvarMusica,
 
-    procurarMemoria
+    procurarMemoria,
+
+    salvarPlaylistFirebase
 
 };
