@@ -4,15 +4,17 @@ const SEARCH_API = "https://archive.org/advancedsearch.php";
 const META_API = "https://archive.org/metadata";
 
 
+
 function normalizar(texto) {
 
     return String(texto || "")
         .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g,"")
+        .replace(/[\u0300-\u036f]/g, "")
         .toLowerCase()
         .trim();
 
 }
+
 
 
 function ehPodcast(titulo, metadata) {
@@ -22,7 +24,6 @@ function ehPodcast(titulo, metadata) {
             titulo + " " +
             JSON.stringify(metadata || {})
         );
-
 
     return [
         "podcast",
@@ -36,31 +37,40 @@ function ehPodcast(titulo, metadata) {
 
 
 
+
+
 async function buscar(pedido) {
 
     try {
 
-        const termo = normalizar(pedido);
+        const termo =
+            normalizar(pedido);
 
         const querPodcast =
             termo.includes("podcast") ||
             termo.includes("episodio") ||
+            termo.includes("episódio") ||
             termo.includes("rss");
 
 
 
-        const busca = await axios.get(
-            SEARCH_API,
-            {
-                params:{
-                    q:`${termo} AND mediatype:audio`,
-                    fl:["identifier","title"],
-                    rows:20,
-                    output:"json"
-                },
-                timeout:30000
-            }
-        );
+        const busca =
+            await axios.get(
+                SEARCH_API,
+                {
+                    params: {
+                        q: `${termo} AND mediatype:audio`,
+                        fl: [
+                            "identifier",
+                            "title"
+                        ],
+                        rows: 20,
+                        output: "json"
+                    },
+                    timeout: 30000
+                }
+            );
+
 
 
         const docs =
@@ -68,7 +78,7 @@ async function buscar(pedido) {
 
 
 
-        for(const item of docs){
+        for (const item of docs) {
 
             const titulo =
                 item.title ||
@@ -80,9 +90,10 @@ async function buscar(pedido) {
                 await axios.get(
                     `${META_API}/${item.identifier}`,
                     {
-                        timeout:15000
+                        timeout: 15000
                     }
                 );
+
 
 
             const arquivos =
@@ -90,29 +101,54 @@ async function buscar(pedido) {
 
 
 
-            const audio =
-                arquivos.find(file => {
+            const candidatos =
+                arquivos.filter(file => {
 
                     const nome =
                         String(file.name || "")
-                        .toLowerCase();
+                            .toLowerCase();
 
+                    const tamanho =
+                        Number(file.size || 0);
 
                     return (
                         /\.(mp3|ogg|wav|m4a)$/.test(nome) &&
-                        !file.private
+                        !file.private &&
+                        tamanho > 0
                     );
 
                 });
 
 
 
-            if(!audio) continue;
+            if (!candidatos.length) {
+
+                continue;
+
+            }
 
 
 
-            if(!querPodcast &&
-               ehPodcast(titulo, meta.data?.metadata)) {
+            candidatos.sort(
+                (a, b) =>
+                    Number(a.size || 0) -
+                    Number(b.size || 0)
+            );
+
+
+
+            const audio =
+                candidatos[0];
+
+
+
+            if (
+                !querPodcast &&
+                ehPodcast(
+                    titulo,
+                    meta.data?.metadata
+                )
+            ) {
 
                 continue;
 
@@ -122,19 +158,25 @@ async function buscar(pedido) {
 
             return {
 
-                fonte:"archive",
+                fonte: "archive",
 
                 titulo,
 
-                id:item.identifier,
+                id: item.identifier,
 
-                arquivo:audio.name,
+                arquivo: audio.name,
 
                 url:
-                `https://archive.org/download/${item.identifier}/${encodeURIComponent(audio.name)}`
+                    `https://archive.org/download/${item.identifier}/${encodeURIComponent(audio.name)}`,
+
+                tamanho:
+                    Number(audio.size || 0),
+
+                tipo: "audio",
+
+                stream: true
 
             };
-
 
         }
 
@@ -142,12 +184,11 @@ async function buscar(pedido) {
 
         return null;
 
-
-    } catch(e){
+    } catch (erro) {
 
         console.log(
             "Archive erro:",
-            e.message
+            erro.message
         );
 
         return null;
@@ -160,7 +201,7 @@ async function buscar(pedido) {
 
 module.exports = {
 
-    nome:"archive",
+    nome: "archive",
 
     buscar
 
