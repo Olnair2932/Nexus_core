@@ -206,6 +206,9 @@ function copyCmd(name) {
         }
 
         async function addYoutubeToDB(video) {
+    console.log("ADD YOUTUBE PLAYLIST:", video, user);
+    addMsg("TESTE ADD: " + JSON.stringify(video), 'ai');
+
     if (!user) return addMsg("Login necessário!", 'ai');
 
     const chave = video.name.replace(/[.#$\[\]\/]/g,'_');
