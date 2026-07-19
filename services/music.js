@@ -4,10 +4,6 @@ const archive = require("../providers/archive");
 const youtube = require("../providers/youtube");
 
 const {
-    criarStream
-} = require("./youtube_stream");
-
-const {
     salvarMusica,
     procurarMemoria,
     salvarPlaylistFirebase
@@ -50,7 +46,6 @@ async function buscarMusica(pedido) {
 
     if (memoria) {
 
-
         if (uid) {
 
             await salvarPlaylistFirebase(
@@ -60,7 +55,6 @@ async function buscarMusica(pedido) {
 
         }
 
-
         return memoria;
 
     }
@@ -68,7 +62,6 @@ async function buscarMusica(pedido) {
 
 
     let ordem = [];
-
 
     const preferencia =
         gemini?.fonte_preferida;
@@ -89,8 +82,8 @@ async function buscarMusica(pedido) {
 
         ordem = [
             podcast,
-            archive,
             local,
+            archive,
             youtube
         ];
 
@@ -99,8 +92,8 @@ async function buscarMusica(pedido) {
 
         ordem = [
             local,
-            archive,
             youtube,
+            archive,
             podcast
         ];
 
@@ -117,9 +110,9 @@ async function buscarMusica(pedido) {
 
             ordem = [
                 podcast,
-                archive,
                 local,
-                youtube
+                youtube,
+                archive
             ];
 
 
@@ -127,9 +120,9 @@ async function buscarMusica(pedido) {
 
             ordem = [
                 local,
+                youtube,
                 archive,
-                podcast,
-                youtube
+                podcast
             ];
 
         }
@@ -138,31 +131,16 @@ async function buscarMusica(pedido) {
 
 
 
-
     for (const provider of ordem) {
 
         try {
 
-
-            let resultado =
+            const resultado =
                 await provider.buscar(texto);
 
 
 
             if (resultado) {
-
-
-                if (
-                    resultado.fonte === "youtube"
-                ) {
-
-                    resultado =
-                        await criarStream(
-                            resultado
-                        );
-
-                }
-
 
 
                 salvarMusica(resultado);
@@ -179,7 +157,6 @@ async function buscarMusica(pedido) {
                 }
 
 
-
                 return resultado;
 
             }
@@ -193,7 +170,6 @@ async function buscarMusica(pedido) {
                 `Erro no provider ${provider.nome || "desconhecido"}:`,
                 erro.message
             );
-
 
         }
 
@@ -212,9 +188,9 @@ function listarProvedores() {
 
     return [
         "local",
+        "youtube",
         "archive",
-        "podcast",
-        "youtube"
+        "podcast"
     ];
 
 }
