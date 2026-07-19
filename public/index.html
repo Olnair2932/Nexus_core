@@ -182,6 +182,9 @@
                                     ${isLocal ? 'DISCO' : 'NUVEM'}
                                 </span>
                                 <span class="btn-star active">★</span>
+                                <span onclick="removerDaPlaylist('${item.name}')" style="cursor:pointer;color:#ff4444;">
+                                    🗑️
+                                </span>
                             </div>
                         </div>
                     `;
@@ -189,7 +192,17 @@
             });
         }
 
-        function copyCmd(name) {
+        async function removerDaPlaylist(name) {
+    if (!user) return;
+
+    const chave = name.replace(/[.#$\[\]\/]/g,'_');
+
+    await db.ref(`playlists/${user.uid}/${chave}`).remove();
+
+    addMsg(`🗑️ ${name} removida da playlist!`, 'ai');
+}
+
+function copyCmd(name) {
             document.getElementById('in').value = `tocar ${name}`;
             document.getElementById('in').focus();
         }
