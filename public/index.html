@@ -182,7 +182,7 @@
                                     ${isLocal ? 'DISCO' : 'NUVEM'}
                                 </span>
                                 <span class="btn-star active">★</span>
-                                <span onclick="removerDaPlaylist('${item.name}')" style="cursor:pointer;color:#ff4444;">
+                                <span onclick="removerDaPlaylist('${Object.keys(data).find(k => data[k].name === item.name)}')" style="cursor:pointer;color:#ff4444;">
                                     🗑️
                                 </span>
                             </div>
@@ -192,14 +192,12 @@
             });
         }
 
-        async function removerDaPlaylist(name) {
+        async function removerDaPlaylist(chave) {
     if (!user) return;
-
-    const chave = name.replace(/[.#$\[\]\/]/g,'_');
 
     await db.ref(`playlists/${user.uid}/${chave}`).remove();
 
-    addMsg(`🗑️ ${name} removida da playlist!`, 'ai');
+    addMsg(`🗑️ Removida da playlist!`, 'ai');
 }
 
 function copyCmd(name) {
