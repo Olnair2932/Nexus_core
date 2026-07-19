@@ -14,7 +14,6 @@ const {
     adicionar
 } = require("../services/nexus_context");
 
-
 const path = require("path");
 const fs = require("fs");
 
@@ -38,7 +37,6 @@ function salvarLog(texto) {
     } catch {}
 
 }
-
 
 
 
@@ -80,13 +78,10 @@ router.post("/chat", async (req, res) => {
         Array.isArray(comandoGemini.termos)
     ) {
 
-
         buscaFinal =
             comandoGemini.termos.join(" ");
 
-
     }
-
 
 
 
@@ -95,7 +90,9 @@ router.post("/chat", async (req, res) => {
 
             texto: buscaFinal,
 
-            uid
+            uid,
+
+            gemini: comandoGemini
 
         });
 
@@ -150,17 +147,14 @@ router.post("/chat", async (req, res) => {
 
             if (retorno.memoria) {
 
-
                 retorno.nexus =
                     `🎵 Recuperado da biblioteca: ${resultado.titulo}`;
 
 
             } else {
 
-
                 retorno.nexus =
                     `🎵 Encontrado em ${resultado.fonte}: ${resultado.titulo}`;
-
 
             }
 
@@ -208,7 +202,6 @@ router.post("/chat", async (req, res) => {
 
 
 });
-
 
 
 
