@@ -49,7 +49,6 @@ router.post("/chat", async (req, res) => {
         req.body.uid || null;
 
 
-
     let comandoGemini = null;
 
 
@@ -65,9 +64,7 @@ router.post("/chat", async (req, res) => {
 
 
 
-    let buscaFinal =
-        texto;
-
+    let buscaFinal = texto;
 
 
     if (
@@ -103,6 +100,8 @@ router.post("/chat", async (req, res) => {
 
         url:null,
 
+        videoId:null,
+
         arquivo:null,
 
         memoria:false
@@ -124,8 +123,12 @@ router.post("/chat", async (req, res) => {
             resultado.videoId
         ) {
 
+            retorno.videoId =
+                resultado.videoId;
+
             retorno.url =
-                `/api/youtube/audio/${resultado.videoId}`;
+                resultado.url || null;
+
 
         } else {
 
@@ -149,29 +152,10 @@ router.post("/chat", async (req, res) => {
 
 
 
-        if (resultado.url || resultado.videoId) {
-
-
-            if (retorno.memoria) {
-
-                retorno.nexus =
-                    `🎵 Recuperado da biblioteca: ${resultado.titulo}`;
-
-            } else {
-
-                retorno.nexus =
-                    `🎵 Encontrado em ${resultado.fonte}: ${resultado.titulo}`;
-
-            }
-
-
-        } else {
-
-
-            retorno.nexus =
-                `🔎 Encontrado em ${resultado.fonte}: ${resultado.titulo}`;
-
-        }
+        retorno.nexus =
+            retorno.memoria
+            ? `🎵 Recuperado da biblioteca: ${resultado.titulo}`
+            : `🎵 Encontrado em ${resultado.fonte}: ${resultado.titulo}`;
 
 
 
@@ -193,15 +177,12 @@ router.post("/chat", async (req, res) => {
 
 
     salvarLog(
-
         `USER:${texto} UID:${uid || "anonimo"} GEMINI:${JSON.stringify(comandoGemini)} RESULT:${JSON.stringify(retorno)}`
-
     );
 
 
 
     res.json(retorno);
-
 
 });
 
