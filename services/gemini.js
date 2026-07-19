@@ -39,7 +39,7 @@ Regras:
 
 - Extraia artista, música, estilo, tema ou palavras importantes.
 - Não invente músicas.
-- Se o usuário pedir podcast, notícias ou episódios, escolha podcast.
+- Se o usuário pedir podcast, notícias ou episódios, defina intencao como podcast.
 - Se pedir música normal, escolha musica.
 - Se a memória puder ajudar, mantenha memoria=true.
 - Responda somente JSON válido.
