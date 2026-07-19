@@ -5,6 +5,16 @@ const {
     buscarMusica
 } = require("../services/music");
 
+const {
+    interpretar
+} = require("../services/gemini");
+
+const {
+    carregar,
+    adicionar
+} = require("../services/nexus_context");
+
+
 const path = require("path");
 const fs = require("fs");
 
@@ -32,7 +42,6 @@ function salvarLog(texto) {
 
 
 
-
 router.post("/chat", async (req, res) => {
 
 
@@ -45,10 +54,46 @@ router.post("/chat", async (req, res) => {
 
 
 
+    let comandoGemini = null;
+
+
+    try {
+
+        comandoGemini =
+            await interpretar(
+                texto,
+                carregar()
+            );
+
+
+    } catch {}
+
+
+
+    let buscaFinal =
+        texto;
+
+
+
+    if (
+        comandoGemini &&
+        Array.isArray(comandoGemini.termos)
+    ) {
+
+
+        buscaFinal =
+            comandoGemini.termos.join(" ");
+
+
+    }
+
+
+
+
     const resultado =
         await buscarMusica({
 
-            texto,
+            texto: buscaFinal,
 
             uid
 
@@ -59,15 +104,15 @@ router.post("/chat", async (req, res) => {
 
     let retorno = {
 
-        nexus: "",
+        nexus:"",
 
-        fonte: null,
+        fonte:null,
 
-        url: null,
+        url:null,
 
-        arquivo: null,
+        arquivo:null,
 
-        memoria: false
+        memoria:false
 
     };
 
@@ -78,20 +123,16 @@ router.post("/chat", async (req, res) => {
     if (resultado) {
 
 
-
         retorno.fonte =
             resultado.fonte;
-
 
 
         retorno.url =
             resultado.url || null;
 
 
-
         retorno.arquivo =
             resultado.arquivo || null;
-
 
 
 
@@ -105,7 +146,6 @@ router.post("/chat", async (req, res) => {
 
 
         if (resultado.url) {
-
 
 
             if (retorno.memoria) {
@@ -125,10 +165,7 @@ router.post("/chat", async (req, res) => {
             }
 
 
-
-
         } else {
-
 
 
             retorno.nexus =
@@ -139,10 +176,7 @@ router.post("/chat", async (req, res) => {
 
 
 
-
-
     } else {
-
 
 
         retorno.nexus =
@@ -154,8 +188,18 @@ router.post("/chat", async (req, res) => {
 
 
 
+    adicionar(
+        texto,
+        retorno.nexus
+    );
+
+
+
+
     salvarLog(
-        `USER:${texto} UID:${uid || "anonimo"} RESULT:${JSON.stringify(retorno)}`
+
+        `USER:${texto} UID:${uid || "anonimo"} GEMINI:${JSON.stringify(comandoGemini)} RESULT:${JSON.stringify(retorno)}`
+
     );
 
 
@@ -164,7 +208,6 @@ router.post("/chat", async (req, res) => {
 
 
 });
-
 
 
 
