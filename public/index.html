@@ -262,7 +262,7 @@ async function send() {
 
                     youtubeAtual = {
                         videoId: data.videoId,
-                        name: data.videoId
+                        name: data.titulo || data.videoId
                     };
 
                     document.getElementById('btnYoutubePlaylist').style.display = "block";

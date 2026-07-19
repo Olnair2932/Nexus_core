@@ -125,6 +125,7 @@ router.post("/chat", async (req, res) => {
 
             retorno.videoId =
                 resultado.videoId;
+            retorno.titulo = resultado.titulo || "Vídeo YouTube";
 
             retorno.url =
                 resultado.url || null;
