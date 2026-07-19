@@ -42,10 +42,8 @@ function salvarLog(texto) {
 
 router.post("/chat", async (req, res) => {
 
-
     const texto =
         req.body.texto || "";
-
 
     const uid =
         req.body.uid || null;
@@ -62,7 +60,6 @@ router.post("/chat", async (req, res) => {
                 texto,
                 carregar()
             );
-
 
     } catch {}
 
@@ -98,7 +95,6 @@ router.post("/chat", async (req, res) => {
 
 
 
-
     let retorno = {
 
         nexus:"",
@@ -115,8 +111,6 @@ router.post("/chat", async (req, res) => {
 
 
 
-
-
     if (resultado) {
 
 
@@ -124,8 +118,22 @@ router.post("/chat", async (req, res) => {
             resultado.fonte;
 
 
-        retorno.url =
-            resultado.url || null;
+
+        if (
+            resultado.fonte === "youtube" &&
+            resultado.videoId
+        ) {
+
+            retorno.url =
+                `/api/youtube/audio/${resultado.videoId}`;
+
+        } else {
+
+            retorno.url =
+                resultado.url || null;
+
+        }
+
 
 
         retorno.arquivo =
@@ -141,15 +149,13 @@ router.post("/chat", async (req, res) => {
 
 
 
-
-        if (resultado.url) {
+        if (resultado.url || resultado.videoId) {
 
 
             if (retorno.memoria) {
 
                 retorno.nexus =
                     `🎵 Recuperado da biblioteca: ${resultado.titulo}`;
-
 
             } else {
 
@@ -165,7 +171,6 @@ router.post("/chat", async (req, res) => {
             retorno.nexus =
                 `🔎 Encontrado em ${resultado.fonte}: ${resultado.titulo}`;
 
-
         }
 
 
@@ -176,9 +181,7 @@ router.post("/chat", async (req, res) => {
         retorno.nexus =
             "❌ Nenhuma fonte encontrou esse pedido.";
 
-
     }
-
 
 
 
@@ -186,7 +189,6 @@ router.post("/chat", async (req, res) => {
         texto,
         retorno.nexus
     );
-
 
 
 
