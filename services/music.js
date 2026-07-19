@@ -81,9 +81,9 @@ async function buscarMusica(pedido) {
     } else if (preferencia === "podcast") {
 
         ordem = [
-            podcast,
             local,
             archive,
+            podcast,
             youtube
         ];
 
