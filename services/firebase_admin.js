@@ -1,17 +1,22 @@
-const admin = require("firebase-admin");
+const { initializeApp, cert, getApps } = require("firebase-admin/app");
+const { getDatabase } = require("firebase-admin/database");
 
-if (!admin.apps.length) {
+if (getApps().length === 0) {
+
+    if (!process.env.FIREBASE_ADMIN_KEY) {
+        throw new Error("FIREBASE_ADMIN_KEY não configurada");
+    }
 
     const serviceAccount = JSON.parse(
         process.env.FIREBASE_ADMIN_KEY
     );
 
-    admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
+    initializeApp({
+        credential: cert(serviceAccount),
         databaseURL:
             "https://nexus-core-42ebb-default-rtdb.firebaseio.com"
     });
 
 }
 
-module.exports = admin.database();
+module.exports = getDatabase();
