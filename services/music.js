@@ -20,6 +20,7 @@ async function buscarMusica(pedido) {
             : pedido;
 
 
+
     const uid =
         typeof pedido === "object"
             ? pedido.uid
@@ -27,9 +28,16 @@ async function buscarMusica(pedido) {
 
 
 
+    const gemini =
+        typeof pedido === "object"
+            ? pedido.gemini
+            : null;
+
+
+
     const textoBusca =
         String(texto || "")
-            .toLowerCase();
+        .toLowerCase();
 
 
 
@@ -58,35 +66,70 @@ async function buscarMusica(pedido) {
 
 
 
-    let ordem;
+    let ordem = [];
 
 
 
-    if (
-        textoBusca.includes("podcast") ||
-        textoBusca.includes("rss") ||
-        textoBusca.includes("episodio") ||
-        textoBusca.includes("episódio")
-    ) {
+    const preferencia =
+        gemini?.fonte_preferida;
 
+
+
+    if (preferencia === "youtube") {
 
         ordem = [
+            youtube,
             local,
+            archive,
+            podcast
+        ];
+
+    } else if (preferencia === "podcast") {
+
+        ordem = [
             podcast,
             archive,
+            local,
             youtube
         ];
 
+    } else if (preferencia === "local") {
+
+        ordem = [
+            local,
+            archive,
+            youtube,
+            podcast
+        ];
 
     } else {
 
 
-        ordem = [
-            local,
-            archive,
-            podcast,
-            youtube
-        ];
+        if (
+            textoBusca.includes("podcast") ||
+            textoBusca.includes("rss") ||
+            textoBusca.includes("episodio") ||
+            textoBusca.includes("episódio")
+        ) {
+
+            ordem = [
+                podcast,
+                archive,
+                local,
+                youtube
+            ];
+
+
+        } else {
+
+            ordem = [
+                local,
+                archive,
+                podcast,
+                youtube
+            ];
+
+        }
 
     }
 
@@ -154,7 +197,6 @@ async function buscarMusica(pedido) {
 
 function listarProvedores() {
 
-
     return [
         "local",
         "archive",
@@ -162,10 +204,7 @@ function listarProvedores() {
         "youtube"
     ];
 
-
 }
-
-
 
 
 
