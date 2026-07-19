@@ -23,14 +23,15 @@ function carregarMemoria() {
 
     try {
 
-        const dados = JSON.parse(
-            fs.readFileSync(FILE, "utf8")
-        );
+        const dados =
+            JSON.parse(
+                fs.readFileSync(FILE, "utf8")
+            );
 
 
         return dados.musicas
             ? dados
-            : { musicas: {} };
+            : { musicas:{} };
 
 
     } catch (erro) {
@@ -42,12 +43,13 @@ function carregarMemoria() {
 
 
         return {
-            musicas: {}
+            musicas:{}
         };
 
     }
 
 }
+
 
 
 
@@ -63,9 +65,41 @@ function salvarArquivo(memoria) {
 
 
 
+
+function ehStreaming(musica) {
+
+    if (!musica) return false;
+
+
+    return (
+        musica.stream === true ||
+        musica.tipo === "rss" ||
+        musica.fonte === "podcast"
+    );
+
+}
+
+
+
+
+
 function salvarMusica(musica) {
 
+
     if (!musica) return;
+
+
+    if (ehStreaming(musica)) {
+
+        console.log(
+            "📡 Stream não salvo na memória local:",
+            musica.titulo
+        );
+
+        return;
+
+    }
+
 
 
     const arquivo =
@@ -74,22 +108,28 @@ function salvarMusica(musica) {
         musica.titulo;
 
 
+
     if (!arquivo) return;
 
 
 
-    const palavras = arquivo
-        .replace(/\.[^/.]+$/, "")
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase()
-        .replace(/[^a-z0-9 ]/g, " ")
-        .split(" ")
-        .filter(p => p.length >= 3);
+    const palavras =
+        arquivo
+            .replace(/\.[^/.]+$/, "")
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase()
+            .replace(/[^a-z0-9 ]/g, " ")
+            .split(" ")
+            .filter(
+                p => p.length >= 3
+            );
 
 
 
-    const memoria = carregarMemoria();
+    const memoria =
+        carregarMemoria();
+
 
 
     if (!memoria.musicas) {
@@ -102,6 +142,7 @@ function salvarMusica(musica) {
 
     for (const palavra of palavras) {
 
+
         memoria.musicas[palavra] = {
 
             arquivo,
@@ -110,6 +151,7 @@ function salvarMusica(musica) {
                 (memoria.musicas[palavra]?.vezes || 0) + 1
 
         };
+
 
     }
 
@@ -124,28 +166,38 @@ function salvarMusica(musica) {
         arquivo
     );
 
+
 }
+
+
+
 
 
 
 
 async function salvarPlaylistFirebase(musica, uid) {
 
+
     if (!uid || !musica) return;
 
 
-    const arquivo =
+
+    const nome =
         musica.arquivo ||
         musica.file ||
         musica.titulo;
 
 
-    if (!arquivo) return;
+
+    if (!nome) return;
 
 
 
     const chave =
-        arquivo.replace(/[.#$\[\]\/]/g, "_");
+        nome.replace(
+            /[.#$\[\]\/]/g,
+            "_"
+        );
 
 
 
@@ -153,17 +205,34 @@ async function salvarPlaylistFirebase(musica, uid) {
         .ref(`playlists/${uid}/${chave}`)
         .set({
 
-            name: arquivo,
+
+            name:
+                nome,
+
 
             url:
                 musica.url ||
-                "/" + encodeURIComponent(arquivo),
+                "/" +
+                encodeURIComponent(nome),
+
 
             fonte:
-                musica.fonte || "local",
+                musica.fonte ||
+                "local",
+
+
+            tipo:
+                musica.tipo ||
+                "audio",
+
+
+            stream:
+                musica.stream === true,
+
 
             date:
                 Date.now()
+
 
         });
 
@@ -171,10 +240,14 @@ async function salvarPlaylistFirebase(musica, uid) {
 
     console.log(
         "☁️ Música salva no Firebase:",
-        arquivo
+        nome
     );
 
+
 }
+
+
+
 
 
 
@@ -183,17 +256,21 @@ async function salvarPlaylistFirebase(musica, uid) {
 function procurarMemoria(texto) {
 
 
-    const palavras = String(texto || "")
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase()
-        .replace(/[^a-z0-9 ]/g, " ")
-        .split(" ")
-        .filter(p => p.length >= 3);
+    const palavras =
+        String(texto || "")
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase()
+            .replace(/[^a-z0-9 ]/g, " ")
+            .split(" ")
+            .filter(
+                p => p.length >= 3
+            );
 
 
 
-    const memoria = carregarMemoria();
+    const memoria =
+        carregarMemoria();
 
 
 
@@ -210,23 +287,33 @@ function procurarMemoria(texto) {
 
             return {
 
-                fonte: "memoria",
+
+                fonte:"memoria",
+
 
                 titulo:
                     item.arquivo,
 
+
                 arquivo:
                     item.arquivo,
 
+
                 url:
                     "/" +
-                    encodeURIComponent(item.arquivo),
+                    encodeURIComponent(
+                        item.arquivo
+                    ),
 
-                adicionada: true
+
+                adicionada:true
+
 
             };
 
+
         }
+
 
     }
 
@@ -234,13 +321,16 @@ function procurarMemoria(texto) {
 
     return null;
 
+
 }
 
 
 
 
 
+
 module.exports = {
+
 
     carregarMemoria,
 
@@ -249,5 +339,6 @@ module.exports = {
     procurarMemoria,
 
     salvarPlaylistFirebase
+
 
 };
