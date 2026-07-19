@@ -73,11 +73,43 @@
       "vezes": 0
     },
     "oficial": {
-      "arquivo": "Terno_Rei_-_Dia_Lindo_Clipe_Oficial.mp3",
-      "vezes": 0
+      "arquivo": "Felicidade - Marcelo Jeneci (Videoclipe Oficial).mp3",
+      "vezes": 2
     },
     "consagracao": {
       "arquivo": "CONSAGRA__O___Aline_Barros____Vers_o__pica_Orquestral.mp3",
+      "vezes": 1
+    },
+    "roberto": {
+      "arquivo": "Roberto_Carlos_-_Detalhes___udio_Oficial_.mp3",
+      "vezes": 1
+    },
+    "carlos": {
+      "arquivo": "Roberto_Carlos_-_Detalhes___udio_Oficial_.mp3",
+      "vezes": 1
+    },
+    "detalhes": {
+      "arquivo": "Roberto_Carlos_-_Detalhes___udio_Oficial_.mp3",
+      "vezes": 1
+    },
+    "udio": {
+      "arquivo": "Roberto_Carlos_-_Detalhes___udio_Oficial_.mp3",
+      "vezes": 1
+    },
+    "felicidade": {
+      "arquivo": "Felicidade - Marcelo Jeneci (Videoclipe Oficial).mp3",
+      "vezes": 1
+    },
+    "marcelo": {
+      "arquivo": "Felicidade - Marcelo Jeneci (Videoclipe Oficial).mp3",
+      "vezes": 1
+    },
+    "jeneci": {
+      "arquivo": "Felicidade - Marcelo Jeneci (Videoclipe Oficial).mp3",
+      "vezes": 1
+    },
+    "videoclipe": {
+      "arquivo": "Felicidade - Marcelo Jeneci (Videoclipe Oficial).mp3",
       "vezes": 1
     }
   }

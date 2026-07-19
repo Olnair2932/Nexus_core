@@ -8,22 +8,17 @@ const {
 } = require("./music_memory");
 
 
-
 async function buscarMusica(pedido) {
 
     const texto = String(pedido || "")
         .toLowerCase();
 
 
-    // Primeiro procura na memória do NEXUS
+
     const memoria = procurarMemoria(texto);
 
-    if (memoria) {
 
-        console.log(
-            "🎵 Encontrado na memória:",
-            memoria.arquivo || memoria.titulo
-        );
+    if (memoria) {
 
         return memoria;
 
@@ -68,11 +63,10 @@ async function buscarMusica(pedido) {
                 await provider.buscar(pedido);
 
 
+
             if (resultado) {
 
-                // Salva automaticamente na biblioteca
                 salvarMusica(resultado);
-
 
                 return resultado;
 
@@ -91,10 +85,10 @@ async function buscarMusica(pedido) {
     }
 
 
+
     return null;
 
 }
-
 
 
 

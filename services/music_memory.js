@@ -7,7 +7,6 @@ const FILE = path.join(
 );
 
 
-
 function carregarMemoria() {
 
     if (!fs.existsSync(FILE)) {
@@ -25,16 +24,9 @@ function carregarMemoria() {
             );
 
 
-        if (Array.isArray(dados)) {
-
-            return {
-                musicas: {}
-            };
-
-        }
-
-
-        return dados;
+        return dados.musicas
+            ? dados
+            : { musicas: {} };
 
 
     } catch (erro) {
@@ -54,11 +46,7 @@ function carregarMemoria() {
 
 
 
-
-function salvarArquivo() {
-
-    const memoria = carregarMemoria();
-
+function salvarArquivo(memoria) {
 
     fs.writeFileSync(
         FILE,
@@ -70,12 +58,9 @@ function salvarArquivo() {
 
 
 
-
 function salvarMusica(musica) {
 
-    if (!musica) {
-        return;
-    }
+    if (!musica) return;
 
 
     const arquivo =
@@ -84,9 +69,8 @@ function salvarMusica(musica) {
         musica.titulo;
 
 
-    if (!arquivo) {
-        return;
-    }
+    if (!arquivo) return;
+
 
 
     const palavras = arquivo
@@ -101,6 +85,7 @@ function salvarMusica(musica) {
 
 
     const memoria = carregarMemoria();
+
 
 
     if (!memoria.musicas) {
@@ -123,7 +108,9 @@ function salvarMusica(musica) {
     }
 
 
-    salvarArquivo();
+
+    salvarArquivo(memoria);
+
 
 
     console.log(
@@ -135,17 +122,13 @@ function salvarMusica(musica) {
 
 
 
-
 function procurarMemoria(texto) {
 
-    const busca = String(texto || "")
+    const palavras = String(texto || "")
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
         .toLowerCase()
-        .replace(/[^a-z0-9 ]/g, " ");
-
-
-    const palavras = busca
+        .replace(/[^a-z0-9 ]/g, " ")
         .split(" ")
         .filter(p => p.length >= 3);
 
@@ -154,20 +137,14 @@ function procurarMemoria(texto) {
     const memoria = carregarMemoria();
 
 
-    if (!memoria.musicas) {
-        return null;
-    }
-
-
 
     for (const palavra of palavras) {
 
         const item =
-            memoria.musicas[palavra];
+            memoria.musicas?.[palavra];
 
 
-        if (item && item.arquivo) {
-
+        if (item?.arquivo) {
 
             return {
 
@@ -192,7 +169,6 @@ function procurarMemoria(texto) {
     return null;
 
 }
-
 
 
 
