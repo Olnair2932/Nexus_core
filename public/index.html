@@ -84,6 +84,9 @@
         <div id="track-info">STANDBY</div>
         <audio id="nexusPlayer" controls style="width:100%;height:30px"></audio>
 <div id="youtubePlayer" style="display:none;width:100%;height:180px;"></div>
+<button id="btnYoutubePlaylist" onclick="salvarYoutubeAtual()" style="display:none;">
+➕ Playlist
+</button>
 
     </div>
 
@@ -191,7 +194,24 @@
             document.getElementById('in').focus();
         }
 
-        async function addToDB(name) {
+        async function addYoutubeToDB(video) {
+    if (!user) return addMsg("Login necessário!", 'ai');
+
+    const chave = video.name.replace(/[.#$\[\]\/]/g,'_');
+
+    await db.ref(`playlists/${user.uid}/${chave}`).set({
+        name: video.name,
+        url: "https://www.youtube.com/watch?v=" + video.videoId,
+        videoId: video.videoId,
+        fonte: "youtube",
+        tipo: "audio",
+        date: Date.now()
+    });
+
+    addMsg(`⭐ ${video.name} salvo na playlist!`, 'ai');
+}
+
+async function addToDB(name) {
             if (!user) return addMsg("Login necessário!", 'ai');
             await db.ref(`playlists/${user.uid}/${name.replace(/[.#$\[\]\/]/g,'_')}`).set({
                 name: name,
@@ -201,7 +221,18 @@
             addMsg(`⭐ ${name} salva no Firebase!`, 'ai');
         }
 
-        async function send() {
+        let youtubeAtual = null;
+
+function salvarYoutubeAtual() {
+    if (!youtubeAtual) {
+        addMsg("Nenhum vídeo YouTube carregado.", 'ai');
+        return;
+    }
+
+    addYoutubeToDB(youtubeAtual);
+}
+
+async function send() {
             const input = document.getElementById('in');
             const val = input.value.trim();
             if(!val) return;
@@ -215,6 +246,13 @@
                 const data = await response.json();
                 addMsg(data.nexus, 'ai');
                 if(data.videoId) {
+
+                    youtubeAtual = {
+                        videoId: data.videoId,
+                        name: data.videoId
+                    };
+
+                    document.getElementById('btnYoutubePlaylist').style.display = "block";
 
                     document.getElementById('track-info').innerText =
                         "YOUTUBE : " + data.videoId;
