@@ -1,20 +1,41 @@
 const fs = require("fs");
 const path = require("path");
 
-const FILE = path.join(__dirname, "../public/music_memory.json");
+const FILE = path.join(
+    __dirname,
+    "../public/music_memory.json"
+);
+
 
 
 function carregarMemoria() {
 
     if (!fs.existsSync(FILE)) {
-        return [];
+        return {
+            musicas: {}
+        };
     }
+
 
     try {
 
-        return JSON.parse(
-            fs.readFileSync(FILE, "utf8")
-        );
+        const dados =
+            JSON.parse(
+                fs.readFileSync(FILE, "utf8")
+            );
+
+
+        if (Array.isArray(dados)) {
+
+            return {
+                musicas: {}
+            };
+
+        }
+
+
+        return dados;
+
 
     } catch (erro) {
 
@@ -23,10 +44,31 @@ function carregarMemoria() {
             erro.message
         );
 
-        return [];
+        return {
+            musicas: {}
+        };
+
     }
 
 }
+
+
+
+
+function salvarArquivo() {
+
+    const memoria = carregarMemoria();
+
+
+    fs.writeFileSync(
+        FILE,
+        JSON.stringify(memoria, null, 2),
+        "utf8"
+    );
+
+}
+
+
 
 
 function salvarMusica(musica) {
@@ -36,106 +78,130 @@ function salvarMusica(musica) {
     }
 
 
+    const arquivo =
+        musica.arquivo ||
+        musica.file ||
+        musica.titulo;
+
+
+    if (!arquivo) {
+        return;
+    }
+
+
+    const palavras = arquivo
+        .replace(/\.[^/.]+$/, "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9 ]/g, " ")
+        .split(" ")
+        .filter(p => p.length >= 3);
+
+
+
     const memoria = carregarMemoria();
 
 
-    const identificador =
-        musica.url ||
-        musica.arquivo ||
-        musica.file ||
-        musica.nome;
+    if (!memoria.musicas) {
+        memoria.musicas = {};
+    }
 
 
-    const existe = memoria.find(item =>
-        (
-            item.url ||
-            item.arquivo ||
-            item.file ||
-            item.nome
-        ) === identificador
-    );
 
+    for (const palavra of palavras) {
 
-    if (!existe) {
+        memoria.musicas[palavra] = {
 
-        memoria.push({
+            arquivo,
 
-            titulo:
-                musica.titulo ||
-                musica.nome ||
-                "Desconhecido",
+            vezes:
+                (memoria.musicas[palavra]?.vezes || 0) + 1
 
-            artista:
-                musica.artista ||
-                "",
-
-            arquivo:
-                musica.arquivo ||
-                musica.file ||
-                "",
-
-            url:
-                musica.url ||
-                "",
-
-            fonte:
-                musica.fonte ||
-                musica.provider ||
-                "local",
-
-            adicionada:
-                new Date().toISOString()
-
-        });
-
-
-        fs.writeFileSync(
-            FILE,
-            JSON.stringify(memoria, null, 2),
-            "utf8"
-        );
-
-
-        console.log(
-            "🎵 Música salva na memória:",
-            identificador
-        );
+        };
 
     }
 
+
+    salvarArquivo();
+
+
+    console.log(
+        "🎵 Música salva na memória:",
+        arquivo
+    );
+
 }
+
+
 
 
 function procurarMemoria(texto) {
 
+    const busca = String(texto || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9 ]/g, " ");
+
+
+    const palavras = busca
+        .split(" ")
+        .filter(p => p.length >= 3);
+
+
+
     const memoria = carregarMemoria();
 
-    const busca = String(texto || "")
-        .toLowerCase();
+
+    if (!memoria.musicas) {
+        return null;
+    }
 
 
-    return memoria.find(item => {
 
-        const nome = (
-            (item.titulo || "") +
-            " " +
-            (item.artista || "") +
-            " " +
-            (item.arquivo || "")
-        ).toLowerCase();
+    for (const palavra of palavras) {
+
+        const item =
+            memoria.musicas[palavra];
 
 
-        return nome.includes(busca);
+        if (item && item.arquivo) {
 
-    });
+
+            return {
+
+                fonte: "memoria",
+
+                titulo: item.arquivo,
+
+                arquivo: item.arquivo,
+
+                url:
+                    "/" + encodeURIComponent(item.arquivo),
+
+                adicionada: true
+
+            };
+
+        }
+
+    }
+
+
+    return null;
 
 }
+
+
 
 
 module.exports = {
 
     carregarMemoria,
+
     salvarMusica,
+
     procurarMemoria
 
 };
