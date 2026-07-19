@@ -1,5 +1,4 @@
 const express = require("express");
-
 const router = express.Router();
 
 const {
@@ -17,52 +16,77 @@ const LOG = path.join(
 
 
 
-function salvarLog(texto){
+function salvarLog(texto) {
 
-    try{
+    try {
 
         fs.appendFileSync(
             LOG,
             `[${new Date().toISOString()}] ${texto}\n`
         );
 
-    }catch{}
+    } catch {}
 
 }
 
 
 
-router.post("/chat", async(req,res)=>{
 
-    const texto = req.body.texto || "";
+
+router.post("/chat", async (req, res) => {
+
+
+    const texto =
+        req.body.texto || "";
+
+
+    const uid =
+        req.body.uid || null;
+
 
 
     const resultado =
-        await buscarMusica(texto);
+        await buscarMusica({
+
+            texto,
+
+            uid
+
+        });
+
 
 
 
     let retorno = {
 
-        nexus:"",
-        fonte:null,
-        url:null,
-        arquivo:null,
-        memoria:false
+        nexus: "",
+
+        fonte: null,
+
+        url: null,
+
+        arquivo: null,
+
+        memoria: false
 
     };
 
 
 
-    if(resultado){
+
+
+    if (resultado) {
+
 
 
         retorno.fonte =
             resultado.fonte;
 
 
+
         retorno.url =
             resultado.url || null;
+
 
 
         retorno.arquivo =
@@ -70,7 +94,8 @@ router.post("/chat", async(req,res)=>{
 
 
 
-        if(resultado.adicionada){
+
+        if (resultado.adicionada) {
 
             retorno.memoria = true;
 
@@ -78,22 +103,32 @@ router.post("/chat", async(req,res)=>{
 
 
 
-        if(resultado.url){
 
-            if(retorno.memoria){
+        if (resultado.url) {
+
+
+
+            if (retorno.memoria) {
+
 
                 retorno.nexus =
                     `🎵 Recuperado da biblioteca: ${resultado.titulo}`;
 
-            }else{
+
+            } else {
+
 
                 retorno.nexus =
                     `🎵 Encontrado em ${resultado.fonte}: ${resultado.titulo}`;
 
+
             }
 
 
-        }else{
+
+
+        } else {
+
 
 
             retorno.nexus =
@@ -104,7 +139,10 @@ router.post("/chat", async(req,res)=>{
 
 
 
-    }else{
+
+
+    } else {
+
 
 
         retorno.nexus =
@@ -115,8 +153,9 @@ router.post("/chat", async(req,res)=>{
 
 
 
+
     salvarLog(
-        `USER:${texto} RESULT:${JSON.stringify(retorno)}`
+        `USER:${texto} UID:${uid || "anonimo"} RESULT:${JSON.stringify(retorno)}`
     );
 
 
@@ -125,6 +164,8 @@ router.post("/chat", async(req,res)=>{
 
 
 });
+
+
 
 
 
