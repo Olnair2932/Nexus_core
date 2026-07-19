@@ -1,29 +1,34 @@
 from pathlib import Path
-import sys
-import shutil
 
-arquivo = sys.argv[1]
-velho = sys.argv[2]
-novo = sys.argv[3]
+arquivo = Path("public/index.html")
 
-p = Path(arquivo)
+texto = arquivo.read_text(encoding="utf-8")
 
-if not p.exists():
-    print("❌ Arquivo não encontrado:", arquivo)
-    sys.exit(1)
+# adiciona API do YouTube antes do fechamento do head
+marcador = "</head>"
 
-texto = p.read_text(encoding="utf-8")
+youtube_api = """
+<script src="https://www.youtube.com/iframe_api"></script>
+"""
 
-if velho not in texto:
-    print("❌ Texto não encontrado")
-    sys.exit(1)
+if youtube_api.strip() not in texto:
+    texto = texto.replace(marcador, youtube_api + "\n" + marcador)
 
-backup = str(p) + ".bak"
-shutil.copy2(p, backup)
 
-texto = texto.replace(velho, novo)
+# adiciona container do player youtube após o player de audio
+marcador_player = '<audio id="nexusPlayer" controls style="width:100%;height:30px"></audio>'
 
-p.write_text(texto, encoding="utf-8")
+youtube_box = """
+<div id="youtubePlayer" style="display:none;width:100%;height:180px;"></div>
+"""
 
-print("✅ Alteração aplicada:", arquivo)
-print("📦 Backup criado:", backup)
+if youtube_box.strip() not in texto:
+    texto = texto.replace(
+        marcador_player,
+        marcador_player + youtube_box
+    )
+
+
+arquivo.write_text(texto, encoding="utf-8")
+
+print("index.html atualizado com suporte inicial YouTube")
