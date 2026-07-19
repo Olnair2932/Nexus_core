@@ -4,21 +4,51 @@ const archive = require("../providers/archive");
 
 const {
     salvarMusica,
-    procurarMemoria
+    procurarMemoria,
+    salvarPlaylistFirebase
 } = require("./music_memory");
+
 
 
 async function buscarMusica(pedido) {
 
-    const texto = String(pedido || "")
-        .toLowerCase();
+
+    const texto =
+        typeof pedido === "object"
+            ? pedido.texto
+            : pedido;
+
+
+    const uid =
+        typeof pedido === "object"
+            ? pedido.uid
+            : null;
 
 
 
-    const memoria = procurarMemoria(texto);
+    const textoBusca =
+        String(texto || "")
+            .toLowerCase();
+
+
+
+    const memoria =
+        procurarMemoria(textoBusca);
+
 
 
     if (memoria) {
+
+
+        if (uid) {
+
+            await salvarPlaylistFirebase(
+                memoria,
+                uid
+            );
+
+        }
+
 
         return memoria;
 
@@ -26,15 +56,18 @@ async function buscarMusica(pedido) {
 
 
 
+
     let ordem;
 
 
+
     if (
-        texto.includes("podcast") ||
-        texto.includes("rss") ||
-        texto.includes("episodio") ||
-        texto.includes("episódio")
+        textoBusca.includes("podcast") ||
+        textoBusca.includes("rss") ||
+        textoBusca.includes("episodio") ||
+        textoBusca.includes("episódio")
     ) {
+
 
         ordem = [
             local,
@@ -44,6 +77,7 @@ async function buscarMusica(pedido) {
 
 
     } else {
+
 
         ordem = [
             local,
@@ -55,32 +89,53 @@ async function buscarMusica(pedido) {
 
 
 
+
     for (const provider of ordem) {
+
 
         try {
 
+
             const resultado =
-                await provider.buscar(pedido);
+                await provider.buscar(texto);
 
 
 
             if (resultado) {
 
+
                 salvarMusica(resultado);
+
+
+
+                if (uid) {
+
+                    await salvarPlaylistFirebase(
+                        resultado,
+                        uid
+                    );
+
+                }
+
+
 
                 return resultado;
 
             }
 
 
+
         } catch (erro) {
+
 
             console.log(
                 `Erro no provider ${provider.nome || "desconhecido"}:`,
                 erro.message
             );
 
+
         }
+
 
     }
 
@@ -92,7 +147,9 @@ async function buscarMusica(pedido) {
 
 
 
+
 function listarProvedores() {
+
 
     return [
         "local",
@@ -100,7 +157,9 @@ function listarProvedores() {
         "podcast"
     ];
 
+
 }
+
 
 
 
