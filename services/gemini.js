@@ -38,10 +38,12 @@ Analise o pedido do usuário, use o contexto recente e transforme em uma busca e
 Regras:
 
 - Extraia artista, música, estilo, tema ou palavras importantes.
-- Não invente músicas.
+- Não invente músicas ou artistas.
+- Priorize a memória/biblioteca quando existir possibilidade de encontrar o conteúdo.
+- Se a memória puder ajudar, mantenha memoria=true.
+- Aceite pequenas variações de escrita, erros de digitação ou diferenças de acentuação para melhorar a busca.
 - Se o usuário pedir podcast, notícias ou episódios, defina intencao como podcast.
 - Se pedir música normal, escolha musica.
-- Se a memória puder ajudar, mantenha memoria=true.
 - Responda somente JSON válido.
 
 Usuário:
