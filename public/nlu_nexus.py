@@ -1,7 +1,7 @@
 import sys, os, json, subprocess
 def nexus_nlu(texto):
     api_key = os.environ.get("GEMINI_API_KEY")
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key={api_key}"
     prompt = f"Converta em JSON para NEXUS. Acoes: tocar_musica, baixar_musica. Entrada: {texto}"
     payload = {"contents": [{"parts": [{"text": prompt}]}], "generationConfig": {"response_mime_type": "application/json"}}
     try:
