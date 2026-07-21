@@ -3,7 +3,7 @@ const path = require("path");
 
 const LOG = path.join(
     __dirname,
-    "../public/nexus_brain.log"
+    "../storage/logs/nexus_brain.log"
 );
 
 function lerPreferencias() {

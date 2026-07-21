@@ -10,6 +10,7 @@ bin/
 # Logs e arquivos gerados pelo Nexus
 public/*.log
 public/music_memory.json
+storage/logs/*.log
 
 # Backups
 backups/
@@ -20,6 +21,9 @@ public/*backup*
 # Arquivos temporários
 tmp_download/
 
+# Cache Python
+__pycache__/
+
 # Arquivos HTML antigos
 public/iiindex.html
 
@@ -28,3 +32,6 @@ public/iiindex.html
 !public/*.webm
 !public/*.m4a
 !public/*.ogg
+
+# Scripts temporários
+sed.py

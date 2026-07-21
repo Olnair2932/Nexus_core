@@ -24,7 +24,7 @@ const fs = require("fs");
 
 const LOG = path.join(
     __dirname,
-    "../public/nexus_brain.log"
+    "../storage/logs/nexus_brain.log"
 );
 
 
