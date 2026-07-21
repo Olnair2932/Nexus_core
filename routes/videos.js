@@ -5,7 +5,7 @@ const {
     uploadVideo
 } = require("../services/cloudinary");
 
-const db = require("../services/firebase_admin");
+const database = require("../services/firebase_admin");
 
 const router = express.Router();
 
@@ -23,7 +23,7 @@ router.get(
         try {
 
             const snapshot =
-                await db
+                await database
                 .ref("videos")
                 .once("value");
 
@@ -76,7 +76,7 @@ router.post(
                 Date.now().toString();
 
 
-            await db
+            await database
             .ref(`videos/${id}`)
             .set({
 
