@@ -123,48 +123,4 @@ router.post(
 );
 
 
-
-
-// DELETE VIDEO CLOUDINARY + FIREBASE
-router.delete(
- "/videos/:id",
- async (req,res)=>{
-   try{
-
-    const id = req.params.id;
-
-    const snap = await database
-      .ref(`videos/${id}`)
-      .once("value");
-
-    const video = snap.val();
-
-    if(!video){
-      return res.status(404).json({
-        erro:"Vídeo não encontrado"
-      });
-    }
-
-    if(video.public_id){
-      await deleteVideo(video.public_id);
-    }
-
-    await database
-      .ref(`videos/${id}`)
-      .remove();
-
-    res.json({
-      sucesso:true
-    });
-
-   }catch(erro){
-    console.error(erro);
-    res.status(500).json({
-      erro:erro.message
-    });
-   }
- }
-);
-
-
 module.exports = router;

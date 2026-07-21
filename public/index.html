@@ -340,7 +340,7 @@ videos.map(v=>`
 ⭐ Playlist
 </button>
 
-<button onclick="deleteVideoPlaylist('${v.public_id}')">
+<button onclick="deleteCloudVideo('${v.id}')">
 🗑 Excluir
 </button>
 
@@ -399,9 +399,15 @@ alert("Adicionado na playlist");
 }
 
 
-function deleteVideoPlaylist(id){
+async function deleteCloudVideo(id){
 
-alert("Exclusão do Cloudinary será ligada ao endpoint /api/videos/delete");
+if(!confirm("Excluir vídeo?")) return;
+
+await fetch(`/api/videos/${id}`,{
+ method:"DELETE"
+});
+
+loadCloudinary();
 
 }
 

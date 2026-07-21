@@ -1,3 +1,8 @@
+from pathlib import Path
+
+arquivo = Path("routes/videos.js")
+
+conteudo = r'''
 const express = require("express");
 const multer = require("multer");
 
@@ -5,10 +10,9 @@ const {
     uploadVideo
 } = require("../services/cloudinary");
 
-const database = require("../services/firebase_admin");
+const db = require("../services/firebase_admin");
 
 const router = express.Router();
-console.log("VIDEOS ROUTE CARREGADA");
 
 
 const upload = multer({
@@ -24,7 +28,7 @@ router.get(
         try {
 
             const snapshot =
-                await database
+                await db
                 .ref("videos")
                 .once("value");
 
@@ -77,7 +81,7 @@ router.post(
                 Date.now().toString();
 
 
-            await database
+            await db
             .ref(`videos/${id}`)
             .set({
 
@@ -123,48 +127,9 @@ router.post(
 );
 
 
-
-
-// DELETE VIDEO CLOUDINARY + FIREBASE
-router.delete(
- "/videos/:id",
- async (req,res)=>{
-   try{
-
-    const id = req.params.id;
-
-    const snap = await database
-      .ref(`videos/${id}`)
-      .once("value");
-
-    const video = snap.val();
-
-    if(!video){
-      return res.status(404).json({
-        erro:"Vídeo não encontrado"
-      });
-    }
-
-    if(video.public_id){
-      await deleteVideo(video.public_id);
-    }
-
-    await database
-      .ref(`videos/${id}`)
-      .remove();
-
-    res.json({
-      sucesso:true
-    });
-
-   }catch(erro){
-    console.error(erro);
-    res.status(500).json({
-      erro:erro.message
-    });
-   }
- }
-);
-
-
 module.exports = router;
+'''
+
+arquivo.write_text(conteudo.strip() + "\n", encoding="utf-8")
+
+print("routes/videos.js atualizado.")
