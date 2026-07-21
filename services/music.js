@@ -40,7 +40,7 @@ async function buscarMusica(pedido) {
 
 
     const memoria =
-        procurarMemoria(textoBusca);
+        await procurarMemoria(textoBusca, uid);
 
 
 
