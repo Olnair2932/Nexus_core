@@ -79,7 +79,38 @@ router.post("/chat", async (req, res) => {
 
 
 
-    const resultado =
+    
+      if (
+          comandoGemini &&
+          comandoGemini.intencao === "conversa"
+      ) {
+
+          let retorno = {
+              nexus:"",
+              fonte:null,
+              url:null,
+              videoId:null,
+              arquivo:null,
+              memoria:false
+          };
+
+          retorno.nexus =
+              comandoGemini.resposta ||
+              "Olá! Sou o Nexus. Como posso ajudar?";
+
+          adicionar(
+              texto,
+              retorno.nexus
+          );
+
+          salvarLog(
+              `CONVERSA:${texto} RESP:${retorno.nexus}`
+          );
+
+          return res.json(retorno);
+      }
+
+const resultado =
         await buscarMusica({
 
             texto: buscaFinal,
