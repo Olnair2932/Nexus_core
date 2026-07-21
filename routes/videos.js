@@ -8,6 +8,7 @@ const {
 const database = require("../services/firebase_admin");
 
 const router = express.Router();
+console.log("VIDEOS ROUTE CARREGADA");
 
 
 const upload = multer({
