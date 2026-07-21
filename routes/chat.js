@@ -186,6 +186,9 @@ const resultado =
         retorno.arquivo =
             resultado.arquivo || null;
 
+        retorno.titulo =
+            resultado.titulo || resultado.arquivo || "Vídeo";
+
 
 
         if (resultado.adicionada) {
