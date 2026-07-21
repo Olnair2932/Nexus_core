@@ -87,6 +87,34 @@ function carregarMemoria() {
 
 
 
+function registrarPreferencia(memoria, musica) {
+
+    if (!memoria.artistas) {
+        memoria.artistas = {};
+    }
+
+    if (!memoria.generos) {
+        memoria.generos = {};
+    }
+
+    const nome = musica.artista || musica.artist;
+
+    if (nome) {
+        memoria.artistas[nome] =
+            (memoria.artistas[nome] || 0) + 1;
+    }
+
+    const genero = musica.genero || musica.genre;
+
+    if (genero) {
+        memoria.generos[genero] =
+            (memoria.generos[genero] || 0) + 1;
+    }
+
+}
+
+
+
 function salvarArquivo(memoria) {
 
     fs.writeFileSync(
@@ -200,6 +228,8 @@ function salvarMusica(musica) {
     }
 
 
+
+    registrarPreferencia(memoria, musica);
 
     salvarArquivo(memoria);
 
