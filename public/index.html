@@ -184,6 +184,7 @@ margin-top:8px;
             <button id="tab-fav" class="tab-btn" onclick="switchTab('fav')">MINHA PLAYLIST (☁️)</button>
 <button id="tab-cloud" class="tab-btn" onclick="switchTab('cloud')">CLOUDINARY ☁️</button>
 <button id="tab-youtube" class="tab-btn" onclick="switchTab('youtube')">YOUTUBE ▶️</button>
+<button class="tab-btn" onclick="atualizarDados()">🔄 ATUALIZAR</button>
 
         </div>
         <div class="list-container">
@@ -270,6 +271,28 @@ else if (t === 'fav') loadPlaylist();
 else if (t === 'cloud') loadCloudinary();
 else loadYoutube();
         }
+
+
+function atualizarDados(){
+
+    if(currentTab === "cloud"){
+        loadCloudinary();
+    }
+
+    else if(currentTab === "youtube"){
+        loadYoutube();
+    }
+
+    else if(currentTab === "fav"){
+        loadPlaylist();
+    }
+
+    else{
+        loadLibrary();
+    }
+
+}
+
 
         async function loadLibrary() {
             try {
