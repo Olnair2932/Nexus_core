@@ -535,6 +535,7 @@ async function send() {
                     yt.style.display = "none";
 
                     const nome =
+                        data.titulo ||
                         decodeURIComponent(data.url).split('/').pop();
 
                     const video =
