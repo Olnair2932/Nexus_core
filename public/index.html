@@ -94,6 +94,7 @@
         <div class="tabs">
             <button id="tab-lib" class="tab-btn active" onclick="switchTab('lib')">BIBLIOTECA RENDER</button>
             <button id="tab-fav" class="tab-btn" onclick="switchTab('fav')">MINHA PLAYLIST (☁️)</button>
+<button id="tab-cloud" class="tab-btn" onclick="switchTab('cloud')">CLOUDINARY ☁️</button>
         </div>
         <div class="list-container">
             <div id="item-list">Iniciando sistemas...</div>
@@ -161,7 +162,10 @@
             currentTab = t;
             document.getElementById('tab-lib').className = t === 'lib' ? 'tab-btn active' : 'tab-btn';
             document.getElementById('tab-fav').className = t === 'fav' ? 'tab-btn active' : 'tab-btn';
-            t === 'lib' ? loadLibrary() : loadPlaylist();
+document.getElementById('tab-cloud').className = t === 'cloud' ? 'tab-btn active' : 'tab-btn';
+            if (t === 'lib') loadLibrary();
+else if (t === 'fav') loadPlaylist();
+else loadCloudinary();
         }
 
         async function loadLibrary() {
@@ -179,7 +183,35 @@
             } catch (e) { document.getElementById('item-list').innerText = "Erro ao ler Render."; }
         }
 
-        async function loadPlaylist() {
+        
+async function loadCloudinary() {
+    try {
+        const r = await fetch('/api/videos');
+        const videos = await r.json();
+
+        document.getElementById('item-list').innerHTML =
+        videos.length ? videos.map(v => `
+            <div class="list-item">
+                <span onclick="copyCmd('${v.titulo || ''}')">
+                    ${v.titulo || 'Vídeo'}
+                </span>
+                <div class="item-actions">
+                    <span class="status-tag"
+                    style="background:#00f2ff22;color:#00f2ff;">
+                    CLOUD
+                    </span>
+                </div>
+            </div>
+        `).join('') :
+        '<div style="text-align:center;padding:20px;">Nenhum vídeo Cloudinary.</div>';
+
+    } catch(e) {
+        document.getElementById('item-list').innerText =
+        "Erro Cloudinary.";
+    }
+}
+
+async function loadPlaylist() {
             if (!user) {
                 document.getElementById('item-list').innerHTML = "<div style='text-align:center; padding:20px;'>Faça login.</div>";
                 return;
