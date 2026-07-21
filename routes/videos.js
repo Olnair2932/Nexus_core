@@ -85,7 +85,7 @@ router.post(
                     req.file.originalname,
 
                 url:
-                    resultado.secure_url,
+                    resultado.url,
 
                 public_id:
                     resultado.public_id,
