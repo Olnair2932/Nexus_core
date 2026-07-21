@@ -731,6 +731,27 @@ async function send() {
 
         document.getElementById('in').onkeydown = (e) => { if(e.key === 'Enter') send(); };
         loadLibrary();
+
+
+function carregarMusicaInicial(){
+
+    const audio = document.getElementById('nexusPlayer');
+
+    if(audio){
+
+        audio.src = "/Aline_Barros_-_Consagra__o___Louvor_ao_Rei__Ao_Vivo_.mp3";
+        audio.load();
+
+        document.getElementById('track-info').innerText =
+            "NEXUS READY : Aline Barros";
+
+    }
+
+}
+
+window.addEventListener("load", carregarMusicaInicial);
+
+
     </script>
 </body>
 </html>
