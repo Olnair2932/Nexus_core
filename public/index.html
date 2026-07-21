@@ -123,7 +123,8 @@ padding:5px;
 cursor:pointer;
 }
 
-#cloud-list {
+#cloud-list,
+#youtube-list {
 overflow-x:auto;
 overflow-y:hidden;
 height:220px;
@@ -182,12 +183,14 @@ margin-top:8px;
             <button id="tab-lib" class="tab-btn active" onclick="switchTab('lib')">BIBLIOTECA RENDER</button>
             <button id="tab-fav" class="tab-btn" onclick="switchTab('fav')">MINHA PLAYLIST (☁️)</button>
 <button id="tab-cloud" class="tab-btn" onclick="switchTab('cloud')">CLOUDINARY ☁️</button>
+<button id="tab-youtube" class="tab-btn" onclick="switchTab('youtube')">YOUTUBE ▶️</button>
 
         </div>
         <div class="list-container">
             
 <div id="item-list">Iniciando sistemas...</div>
 <div id="cloud-list" style="display:none"></div>
+<div id="youtube-list" style="display:none"></div>
 <div id="cloud-upload" style="display:none">
 <div class="cloud-actions">
 <input id="videoUpload" type="file" accept="video/*">
@@ -261,9 +264,11 @@ margin-top:8px;
             document.getElementById('tab-lib').className = t === 'lib' ? 'tab-btn active' : 'tab-btn';
             document.getElementById('tab-fav').className = t === 'fav' ? 'tab-btn active' : 'tab-btn';
 document.getElementById('tab-cloud').className = t === 'cloud' ? 'tab-btn active' : 'tab-btn';
+document.getElementById('tab-youtube').className = t === 'youtube' ? 'tab-btn active' : 'tab-btn';
             if (t === 'lib') loadLibrary();
 else if (t === 'fav') loadPlaylist();
-else loadCloudinary();
+else if (t === 'cloud') loadCloudinary();
+else loadYoutube();
         }
 
         async function loadLibrary() {
@@ -347,6 +352,70 @@ async function loadPlaylist() {
         }
 
         
+
+async function loadYoutube(){
+
+document.getElementById("item-list").style.display="none";
+document.getElementById("cloud-list").style.display="none";
+document.getElementById("youtube-list").style.display="flex";
+
+try{
+
+if(!user){
+document.getElementById("youtube-list").innerHTML =
+"Faça login para ver sua playlist YouTube.";
+return;
+}
+
+db.ref(`playlists/${user.uid}`).once("value", snapshot=>{
+
+const dados = snapshot.val() || {};
+
+const videos = Object.values(dados)
+.filter(v=>v.fonte==="youtube")
+.slice(0,3);
+
+
+document.getElementById("youtube-list").innerHTML =
+videos.map(v=>`
+
+<div class="video-card">
+
+<b>${v.name}</b>
+
+<iframe
+width="100%"
+height="130"
+src="https://www.youtube.com/embed/${v.videoId}"
+frameborder="0"
+allowfullscreen>
+</iframe>
+
+<div class="video-actions">
+
+<button onclick="copyCmd('${v.name}')">
+▶️ Tocar
+</button>
+
+</div>
+
+</div>
+
+`).join("") || "Nenhum vídeo YouTube salvo.";
+
+});
+
+
+}catch(e){
+
+document.getElementById("youtube-list").innerHTML =
+"Erro YouTube.";
+
+}
+
+}
+
+
 async function loadCloudinary(){
 
 document.getElementById("item-list").style.display="none";
