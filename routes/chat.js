@@ -91,7 +91,10 @@ router.post("/chat", async (req, res) => {
     
       if (
           comandoGemini &&
-          comandoGemini.intencao === "conversa"
+          (
+            comandoGemini.intencao === "conversa" ||
+            comandoGemini.intencao === "sugestao"
+        )
       ) {
 
           let retorno = {
