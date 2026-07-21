@@ -8,6 +8,7 @@ const fs = require("fs");
 const chatRoute = require("./routes/chat");
 const filesRoute = require("./routes/files");
 const statusRoute = require("./routes/status");
+const videosRoute = require("./routes/videos");
 
 process.on("uncaughtException", (err) => {
     console.error("ERRO FATAL:", err);
@@ -34,6 +35,7 @@ app.use(express.static(BASE_DIR));
 app.use("/api", chatRoute);
 app.use("/api", filesRoute);
 app.use("/api", statusRoute);
+app.use("/api", videosRoute);
 
 // Rota inexistente
 app.use((req, res) => {
