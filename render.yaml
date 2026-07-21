@@ -3,17 +3,10 @@ services:
     name: nexus-core
     env: node
 
-    buildCommand: |
-      echo "NEXUS BUILD TEST"
-      npm install
-      apt-get update && apt-get install -y deno
-      deno --version
+    buildCommand: npm install
 
     startCommand: npm start
 
     envVars:
       - key: PORT
         value: 10000
-
-      - key: PATH
-        value: /usr/local/bin:/usr/bin:/bin
