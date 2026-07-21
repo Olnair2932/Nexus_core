@@ -245,7 +245,73 @@ function salvarMusica(musica) {
 
 
 
-function procurarMemoria(texto) {
+async function procurarMemoria(texto, uid) {
+
+
+    if (uid) {
+
+        try {
+
+            const snap =
+                await db.ref(`playlists/${uid}`).once("value");
+
+            const playlist =
+                snap.val();
+
+            if (playlist) {
+
+                const itens =
+                    Object.values(playlist);
+
+                const busca =
+                    normalizar(texto).join(" ");
+
+                const encontrado =
+                    itens.find(item =>
+                        normalizar(item.name || "").join(" ")
+                        .includes(busca)
+                    );
+
+                if (encontrado && encontrado.url) {
+
+                    return {
+
+                        fonte:
+                            encontrado.source ||
+                            "cloudinary",
+
+                        titulo:
+                            encontrado.name,
+
+                        arquivo:
+                            encontrado.name,
+
+                        url:
+                            encontrado.url,
+
+                        tipo:
+                            encontrado.source === "cloudinary"
+                            ? "video"
+                            : "audio",
+
+                        adicionada:true
+
+                    };
+
+                }
+
+            }
+
+        } catch(e) {
+
+            console.log(
+                "Erro buscando playlist Firebase:",
+                e.message
+            );
+
+        }
+
+    }
 
 
     const palavras =
