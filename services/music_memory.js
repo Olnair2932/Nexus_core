@@ -281,6 +281,7 @@ async function procurarMemoria(texto, uid) {
                             "cloudinary",
 
                         titulo:
+                            encontrado.titulo ||
                             encontrado.name,
 
                         arquivo:
