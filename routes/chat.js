@@ -14,6 +14,10 @@ const {
     adicionar
 } = require("../services/nexus_context");
 
+const {
+    lerPreferencias
+} = require("../services/nexus_preferencias");
+
 const path = require("path");
 const fs = require("fs");
 
@@ -54,10 +58,15 @@ router.post("/chat", async (req, res) => {
 
     try {
 
+        const preferencias = lerPreferencias();
+
         comandoGemini =
             await interpretar(
                 texto,
-                carregar()
+                {
+                    historico: carregar(),
+                    preferencias
+                }
             );
 
     } catch {}
