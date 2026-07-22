@@ -273,23 +273,37 @@ async function salvarFavorito(videoId){
 
     const user = firebase.auth().currentUser;
 
+    console.log("Usuário:", user);
+    console.log("Vídeo:", videoId);
+
     if(!user){
         alert("Faça login para favoritar");
         return;
     }
 
-    const ref = db.ref(
-        `feed_favoritos/${videoId}/${user.uid}`
-    );
+    try{
 
-    const snapshot = await ref.once("value");
+        const ref = db.ref(
+            `feed_favoritos/${videoId}/${user.uid}`
+        );
 
-    if(snapshot.exists()){
-        await ref.remove();
-        alert("☆ Favorito removido");
-    } else {
-        await ref.set(true);
-        alert("⭐ Favorito salvo");
+        const snapshot = await ref.once("value");
+
+        if(snapshot.exists()){
+            await ref.remove();
+            console.log("Favorito removido");
+            alert("☆ Favorito removido");
+        }else{
+            await ref.set(true);
+            console.log("Favorito salvo");
+            alert("⭐ Favorito salvo");
+        }
+
+    }catch(e){
+
+        console.error("Erro ao salvar favorito:", e);
+        alert("Erro: " + e.message);
+
     }
 }
 
