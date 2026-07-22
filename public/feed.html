@@ -154,9 +154,24 @@ async function carregarFeedVideos(){
             return;
         }
 
-        feed.innerHTML = videos.map(video => `
-            <div class="card">
+        const user = firebase.auth().currentUser;
 
+        const cards = await Promise.all(
+            videos.map(async video => {
+
+                const videoId = video.id || video.public_id;
+                let favorito = false;
+
+                if(user){
+                    const snap = await db
+                        .ref(`feed_favoritos/${videoId}/${user.uid}`)
+                        .once("value");
+
+                    favorito = snap.exists();
+                }
+
+                return `
+            <div class="card">
                 <video controls playsinline>
                     <source src="${video.url}">
                 </video>
@@ -166,16 +181,23 @@ async function carregarFeedVideos(){
 
                     <span class="action">❤️ 0</span>
                     <span class="action">💬 0</span>
-                    <span class="action" onclick="salvarFavorito('${video.id || video.public_id}')">⭐</span>
+
+                    <span class="action"
+                    onclick="salvarFavorito('${videoId}')">
+                    ${favorito ? "⭐" : "☆"}
+                    </span>
 
                     <span class="action"
                     onclick="this.closest('.card').querySelector('video').requestFullscreen()">
                     ⛶
                     </span>
                 </div>
-
             </div>
-        `).join("");
+                `;
+            })
+        );
+
+        feed.innerHTML = cards.join("");
 
     }catch(erro){
 
