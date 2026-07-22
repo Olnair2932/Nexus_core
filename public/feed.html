@@ -307,8 +307,13 @@ async function salvarFavorito(videoId){
     }
 }
 
-carregarFeedVideos();
-carregarFavoritosFeed();
+firebase.auth().onAuthStateChanged(async (user) => {
+    await carregarFeedVideos();
+
+    if(user){
+        await carregarFavoritosFeed();
+    }
+});
 </script>
 
 
