@@ -582,7 +582,7 @@ const dados = await resposta.json();
 if(resposta.ok){
     alert("✅ Upload concluído");
 }else{
-    alert("❌ " + (dados.erro || "Erro no upload"));
+    alert("❌ " + JSON.stringify(dados));
 }
 
 loadCloudinary();
