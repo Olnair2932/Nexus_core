@@ -577,10 +577,12 @@ const resposta = await fetch("/api/videos/upload",{
     body:fd
 });
 
+const dados = await resposta.json();
+
 if(resposta.ok){
     alert("✅ Upload concluído");
 }else{
-    alert("❌ Erro no upload");
+    alert("❌ " + (dados.erro || "Erro no upload"));
 }
 
 loadCloudinary();
