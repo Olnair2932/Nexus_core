@@ -290,10 +290,17 @@ margin-top:8px;
 document.getElementById('tab-cloud').className = t === 'cloud' ? 'tab-btn active' : 'tab-btn';
 document.getElementById('tab-youtube').className = t === 'youtube' ? 'tab-btn active' : 'tab-btn';
             if (t === 'lib') loadLibrary();
-else if (t === 'fav') loadPlaylist();
+else if (t === 'fav') carregarMinhaPlaylist();
 else if (t === 'cloud') loadCloudinary();
 else loadYoutube();
         }
+
+
+
+async function carregarMinhaPlaylist(){
+    await loadPlaylist();
+    await loadFeedFavoritos();
+}
 
 
 function atualizarDados(){
@@ -384,6 +391,62 @@ async function loadPlaylist() {
         }
 
         
+
+
+async function loadFeedFavoritos(){
+
+    if(!user){
+        document.getElementById("item-list").innerHTML =
+        "Faça login para ver favoritos.";
+        return;
+    }
+
+    try{
+
+        const favSnap = await db
+            .ref(`feed_favoritos`)
+            .once("value");
+
+        const favoritos = favSnap.val() || {};
+
+        const meusFavoritos = Object.keys(favoritos)
+            .filter(videoId => favoritos[videoId][user.uid]);
+
+        const resposta = await fetch("/api/videos");
+        const videos = await resposta.json();
+
+        const lista = videos.filter(video =>
+            meusFavoritos.includes(video.id || video.public_id)
+        );
+
+        document.getElementById("item-list").innerHTML =
+        lista.map(video => `
+
+            <div class="list-item">
+
+                <span>${video.titulo}</span>
+
+                <div class="item-actions">
+
+                    <span class="btn-star active">
+                    ⭐
+                    </span>
+
+                </div>
+
+            </div>
+
+        `).join("") || "Nenhum favorito do Feed.";
+
+    }catch(e){
+
+        console.error("Erro favoritos Feed:", e);
+        document.getElementById("item-list").innerHTML =
+        "Erro carregando favoritos.";
+
+    }
+
+}
 
 async function loadYoutube(){
 
