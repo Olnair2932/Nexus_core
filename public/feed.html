@@ -91,7 +91,7 @@ Título do vídeo
 
 <span class="action">💬 0</span>
 
-<span class="action">⭐</span>
+<span class="action" onclick="salvarFavorito('${video.id || video.public_id}')">⭐</span>
 
 <span class="action"
 onclick="document.querySelector('video').requestFullscreen()">
@@ -108,6 +108,7 @@ onclick="document.querySelector('video').requestFullscreen()">
 
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
 <script>
 const firebaseConfig = {
@@ -121,6 +122,7 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
 const auth = firebase.auth();
 
@@ -181,6 +183,24 @@ async function carregarFeedVideos(){
         feed.innerHTML = "Erro ao carregar vídeos.";
 
     }
+
+}
+
+
+async function salvarFavorito(videoId){
+
+    const user = firebase.auth().currentUser;
+
+    if(!user){
+        alert("Faça login para favoritar");
+        return;
+    }
+
+    await db.ref(
+        `feed_favoritos/${videoId}/${user.uid}`
+    ).set(true);
+
+    alert("⭐ Favorito salvo");
 
 }
 
