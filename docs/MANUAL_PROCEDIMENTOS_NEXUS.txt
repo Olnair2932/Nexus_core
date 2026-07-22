@@ -1,0 +1,374 @@
+MANUAL DE PROCEDIMENTOS NEXUS
+Diagnóstico, correção, edição e manutenção de código
+
+OBJETIVO
+
+Este manual descreve um método seguro para alterar, corrigir,
+testar e versionar um projeto Node.js com arquivos HTML,
+JavaScript e módulos backend.
+
+Fluxo principal:
+
+1. Localizar o problema
+2. Analisar o trecho correto
+3. Criar backup
+4. Alterar somente o necessário
+5. Testar a correção
+6. Confirmar funcionamento
+7. Fazer commit e push
+
+====================================================
+1 - LOCALIZAR ARQUIVOS E ESTRUTURA DO PROJETO
+
+Entrar na pasta do projeto:
+
+cd ~/temp_nexus
+
+Listar arquivos:
+
+ls
+
+Listar incluindo detalhes:
+
+ls -la
+
+Exemplo de estrutura:
+
+public/
+routes/
+services/
+providers/
+server_tuti.js
+package.json
+
+====================================================
+2 - LOCALIZAR TRECHOS DE CÓDIGO
+
+Usar grep para encontrar funções, IDs e palavras:
+
+grep -n "nome" arquivo
+
+Exemplo:
+
+grep -n "nexusVideoPlayer|nexusPlayer" public/index.html
+
+Resultado:
+
+Mostra a linha exata onde o código aparece.
+
+Usar vários termos:
+
+grep -n "firebase|login|Google|switchTab" public/index.html
+
+Muito útil para encontrar:
+
+- funções JavaScript
+- botões HTML
+- IDs
+- rotas
+- chamadas API
+
+====================================================
+3 - VISUALIZAR UM TRECHO ESPECÍFICO
+
+Usar sed:
+
+sed -n '650,710p' public/index.html
+
+Formato:
+
+sed -n 'linha inicial,linha final p' arquivo
+
+Exemplo:
+
+sed -n '270,295p' public/index.html
+
+Serve para analisar o contexto antes de modificar.
+
+====================================================
+4 - CRIAR BACKUP ANTES DE ALTERAR
+
+Sempre criar uma cópia:
+
+cp public/index.html public/index.html.backup_nome
+
+Exemplo:
+
+cp public/index.html public/index.html.backup_player
+
+Para conferir:
+
+ls public | grep backup
+
+Para restaurar:
+
+cp public/index.html.backup_player public/index.html
+
+====================================================
+5 - EDITAR COM PYTHON3 USANDO EOF
+
+Modelo seguro:
+
+python3 <<'EOF'
+from pathlib import Path
+
+p = Path("arquivo")
+
+txt = p.read_text(encoding="utf-8")
+
+txt = txt.replace(
+"codigo antigo",
+"codigo novo"
+)
+
+p.write_text(txt, encoding="utf-8")
+
+print("Alteração concluída")
+EOF
+
+Vantagens:
+
+- evita edição manual errada
+- mantém histórico
+- permite repetir correções
+- funciona bem no Termux Android
+
+====================================================
+6 - EXEMPLO DE ALTERAÇÃO CONTROLADA
+
+Trocar uma função:
+
+python3 <<'EOF'
+from pathlib import Path
+
+p = Path("public/index.html")
+
+txt = p.read_text(encoding="utf-8")
+
+antigo = """
+função antiga
+"""
+
+novo = """
+função nova
+"""
+
+txt = txt.replace(antigo, novo)
+
+p.write_text(txt, encoding="utf-8")
+
+print("OK")
+EOF
+
+====================================================
+7 - VERIFICAR ERROS JAVASCRIPT
+
+Extrair scripts do HTML:
+
+python3 <<'EOF'
+from pathlib import Path
+import re
+
+txt = Path("public/index.html").read_text(
+encoding="utf-8"
+)
+
+scripts = re.findall(
+r"<script[^>]>(.?)</script>",
+txt,
+re.S
+)
+
+Path("nexus_check.js").write_text(
+"\n".join(scripts),
+encoding="utf-8"
+)
+
+print("JS criado")
+EOF
+
+Checar sintaxe:
+
+node --check nexus_check.js
+
+Se não aparecer erro:
+
+JavaScript está válido.
+
+Remover arquivo temporário:
+
+rm nexus_check.js
+
+====================================================
+8 - INVESTIGAR ERROS DE VARIÁVEIS DUPLICADAS
+
+Exemplo:
+
+grep -n "const yt" public/index.html
+
+Se aparecer:
+
+646: const yt
+670: const yt
+685: const yt
+
+Pode indicar duplicação no mesmo bloco.
+
+Sempre verificar o contexto:
+
+sed -n '635,695p' public/index.html
+
+====================================================
+9 - REMOVER ARQUIVOS TEMPORÁRIOS
+
+Encontrar temporários:
+
+find . -type f 
+-name ".bak" 
+-o -name ".backup" 
+-o -name ".tmp" 
+-o -name "~"
+
+Remover caches Python:
+
+find . -type d -name "pycache" -exec rm -rf {} +
+
+====================================================
+10 - TRABALHAR COM ARQUIVOS PYTHON
+
+Encontrar arquivos Python:
+
+find . -type f -name "*.py"
+
+Exemplo:
+
+./public/nlu_nexus.py
+./atualizar_videos.py
+
+Antes de remover:
+
+confirmar se é temporário.
+
+Arquivos .py normalmente são código,
+não backup.
+
+====================================================
+11 - ANALISAR NODE.JS
+
+Arquivo principal:
+
+server_tuti.js
+
+Ver rotas:
+
+grep -n "app.use" server_tuti.js
+
+Ver arquivos estáticos:
+
+grep -n "express.static" server_tuti.js
+
+Exemplo:
+
+app.use(express.static(BASE_DIR))
+
+Ver módulos:
+
+package.json
+
+Instalar dependências:
+
+npm install
+
+Ver módulos instalados:
+
+ls node_modules
+
+====================================================
+12 - ANALISAR ROTAS API
+
+Exemplo:
+
+routes/files.js
+
+Abrir:
+
+sed -n '1,200p' routes/files.js
+
+Procurar endpoints:
+
+grep -n "router.get|router.post" routes/*.js
+
+====================================================
+13 - TESTE ANTES DO GITHUB
+
+Confirmar alterações:
+
+git status
+
+Ver diferenças:
+
+git diff
+
+Adicionar:
+
+git add arquivo
+
+Criar commit:
+
+git commit -m "Descrição da correção"
+
+Enviar:
+
+git push origin nome-da-branch
+
+Exemplo:
+
+git push origin feature/preferencias-musicais
+
+Confirmar:
+
+git status
+
+Resultado esperado:
+
+nothing to commit, working tree clean
+
+====================================================
+14 - PROCEDIMENTO PARA GRANDES ALTERAÇÕES
+
+Sempre:
+
+1. Fazer backup
+2. Fazer grep
+3. Abrir trecho com sed
+4. Alterar com Python EOF
+5. Rodar teste
+6. Conferir diff
+7. Commit
+8. Push
+
+====================================================
+15 - FILOSOFIA DE MANUTENÇÃO DO NEXUS
+
+Não alterar grandes blocos sem necessidade.
+
+Preferir:
+
+LOCALIZAR
+ANALISAR
+BACKUP
+ALTERAR PEQUENO
+TESTAR
+VERSIONAR
+
+Esse método reduz riscos em sistemas com:
+
+- Firebase
+- Cloudinary
+- YouTube API
+- Player de áudio
+- Player de vídeo
+- HTML + JavaScript
+- Node.js
+
+FIM DO MANUAL
