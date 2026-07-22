@@ -216,10 +216,6 @@ margin-top:8px;
             
 <div id="item-list">Iniciando sistemas...</div>
 
-<div id="feed-favoritos" style="margin-top:24px;">
-    <h3>⭐ Favoritos do Feed</h3>
-    <div id="feed-favoritos-list"></div>
-</div>
 <div id="cloud-list" style="display:none"></div>
 <div id="youtube-list" style="display:none"></div>
 <div id="cloud-upload" style="display:none">
@@ -306,7 +302,6 @@ else loadYoutube();
 
 async function carregarMinhaPlaylist(){
     await loadPlaylist();
-    await loadFeedFavoritos();
 }
 
 
