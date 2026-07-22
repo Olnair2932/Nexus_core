@@ -453,29 +453,7 @@ const primeiros =
 videos;
 
 document.getElementById("cloud-list").innerHTML =
-primeiros.map(v=>`
-
-<div class="video-card">
-
-<b>${v.titulo}</b>
-
-<video controls src="${v.url}"></video>
-
-<div class="video-actions">
-
-<button onclick='addVideoPlaylist(${JSON.stringify(v)})'>
-⭐ Playlist
-</button>
-
-<button onclick="deleteCloudVideo('${v.id}')">
-🗑 Excluir
-</button>
-
-</div>
-
-</div>
-
-`).join("") || "Nenhum vídeo.";
+"Vídeos Cloudinary ocultos nesta aba.";
 
 }catch(e){
 
