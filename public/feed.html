@@ -210,6 +210,65 @@ async function carregarFeedVideos(){
 }
 
 
+
+
+async function carregarFavoritosFeed(){
+
+    const lista = document.getElementById("feed-favoritos-list");
+
+    const user = firebase.auth().currentUser;
+
+    if(!user){
+        lista.innerHTML = "Faça login para ver favoritos.";
+        return;
+    }
+
+    try{
+
+        const snap = await db
+            .ref("feed_favoritos")
+            .once("value");
+
+        const dados = snap.val() || {};
+
+        const meusIds = Object.keys(dados)
+            .filter(id => dados[id][user.uid]);
+
+        const resposta = await fetch("/api/videos");
+        const videos = await resposta.json();
+
+        const favoritos = videos.filter(video =>
+            meusIds.includes(video.id || video.public_id)
+        );
+
+        lista.innerHTML =
+            favoritos.map(video => `
+                <div class="card">
+                    <video controls playsinline>
+                        <source src="${video.url}">
+                    </video>
+
+                    <div class="info">
+                        <h3>${video.titulo}</h3>
+
+                        <span class="action"
+                        onclick="salvarFavorito('${video.id || video.public_id}')">
+                        ⭐
+                        </span>
+                    </div>
+                </div>
+            `).join("")
+            || "Nenhum favorito salvo.";
+
+    }catch(e){
+
+        console.error("Erro favoritos Feed:", e);
+        lista.innerHTML = "Erro carregando favoritos.";
+
+    }
+
+}
+
 async function salvarFavorito(videoId){
 
     const user = firebase.auth().currentUser;
@@ -232,12 +291,10 @@ async function salvarFavorito(videoId){
         await ref.set(true);
         alert("⭐ Favorito salvo");
     }
-
-    carregarFeedVideos();
 }
 
 carregarFeedVideos();
-
+carregarFavoritosFeed();
 </script>
 
 
