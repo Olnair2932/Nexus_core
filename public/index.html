@@ -565,19 +565,23 @@ document.getElementById("cloud-list").innerHTML="Erro Cloudinary";
 
 
 async function uploadCloudVideo(){
-
 const file=document.getElementById("videoUpload").files[0];
 
 if(!file)return alert("Selecione um vídeo");
 
 const fd=new FormData();
-
 fd.append("video",file);
 
-await fetch("/api/videos/upload",{
-method:"POST",
-body:fd
+const resposta = await fetch("/api/videos/upload",{
+    method:"POST",
+    body:fd
 });
+
+if(resposta.ok){
+    alert("✅ Upload concluído");
+}else{
+    alert("❌ Erro no upload");
+}
 
 loadCloudinary();
 
