@@ -318,7 +318,7 @@ function atualizarDados(){
         }
 
         
-async function loadCloudinary() {
+async function loadCloudinarySimple() {
     try {
         const r = await fetch('/api/videos');
         const videos = await r.json();
@@ -681,6 +681,28 @@ async function send() {
 
                     const audio =
                         document.getElementById('nexusPlayer');
+
+                    const yt =
+                        document.getElementById('youtubePlayer');
+
+                    // Limpa estados anteriores dos players
+                    audio.pause();
+                    audio.removeAttribute('src');
+                    audio.load();
+                    audio.style.display = "none";
+
+                    video.pause();
+                    video.removeAttribute('src');
+                    video.load();
+                    video.style.display = "none";
+
+                    if (yt) {
+                        yt.style.display = "none";
+                    }
+
+                    if (window.nexusYT && typeof window.nexusYT.stopVideo === "function") {
+                        window.nexusYT.stopVideo();
+                    }
 
                     document.getElementById('track-info').innerText =
                         data.fonte.toUpperCase() + " : " + nome;
