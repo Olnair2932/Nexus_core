@@ -334,30 +334,7 @@ function atualizarDados(){
 
         
 async function loadCloudinarySimple() {
-    try {
-        const r = await fetch('/api/videos');
-        const videos = await r.json();
-
-        document.getElementById('item-list').innerHTML =
-        videos.length ? videos.map(v => `
-            <div class="list-item">
-                <span onclick="copyCmd('${v.titulo || ''}')">
-                    ${v.titulo || 'Vídeo'}
-                </span>
-                <div class="item-actions">
-                    <span class="status-tag"
-                    style="background:#00f2ff22;color:#00f2ff;">
-                    CLOUD
-                    </span>
-                </div>
-            </div>
-        `).join('') :
-        '<div style="text-align:center;padding:20px;">Nenhum vídeo Cloudinary.</div>';
-
-    } catch(e) {
-        document.getElementById('item-list').innerText =
-        "Erro Cloudinary.";
-    }
+    console.log("Cloudinary removido da tela principal. Use o NEXUS FEED.");
 }
 
 async function loadPlaylist() {
