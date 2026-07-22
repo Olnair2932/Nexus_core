@@ -213,6 +213,11 @@ margin-top:8px;
         <div class="list-container">
             
 <div id="item-list">Iniciando sistemas...</div>
+
+<div id="feed-favoritos" style="margin-top:24px;">
+    <h3>⭐ Favoritos do Feed</h3>
+    <div id="feed-favoritos-list"></div>
+</div>
 <div id="cloud-list" style="display:none"></div>
 <div id="youtube-list" style="display:none"></div>
 <div id="cloud-upload" style="display:none">
@@ -396,7 +401,7 @@ async function loadPlaylist() {
 async function loadFeedFavoritos(){
 
     if(!user){
-        document.getElementById("item-list").innerHTML =
+        document.getElementById("feed-favoritos-list").innerHTML =
         "Faça login para ver favoritos.";
         return;
     }
@@ -419,7 +424,7 @@ async function loadFeedFavoritos(){
             meusFavoritos.includes(video.id || video.public_id)
         );
 
-        document.getElementById("item-list").innerHTML =
+        document.getElementById("feed-favoritos-list").innerHTML =
         lista.map(video => `
 
             <div class="list-item">
@@ -441,7 +446,7 @@ async function loadFeedFavoritos(){
     }catch(e){
 
         console.error("Erro favoritos Feed:", e);
-        document.getElementById("item-list").innerHTML =
+        document.getElementById("feed-favoritos-list").innerHTML =
         "Erro carregando favoritos.";
 
     }
