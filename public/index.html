@@ -438,62 +438,10 @@ document.getElementById("item-list").style.display="none";
 document.getElementById("cloud-list").style.display="none";
 document.getElementById("youtube-list").style.display="flex";
 
-try{
-
-if(!user){
 document.getElementById("youtube-list").innerHTML =
-"Faça login para ver sua playlist YouTube.";
-return;
-}
-
-db.ref(`playlists/${user.uid}`).once("value", snapshot=>{
-
-const dados = snapshot.val() || {};
-
-const videos = Object.values(dados)
-.filter(v=>v.fonte==="youtube")
-.slice(0,3);
-
-
-document.getElementById("youtube-list").innerHTML =
-videos.map(v=>`
-
-<div class="video-card">
-
-<b>${v.name}</b>
-
-<iframe
-width="100%"
-height="130"
-src="https://www.youtube.com/embed/${v.videoId}"
-frameborder="0"
-allowfullscreen>
-</iframe>
-
-<div class="video-actions">
-
-<button onclick="copyCmd('${v.name}')">
-▶️ Tocar
-</button>
-
-</div>
-
-</div>
-
-`).join("") || "Nenhum vídeo YouTube salvo.";
-
-});
-
-
-}catch(e){
-
-document.getElementById("youtube-list").innerHTML =
-"Erro YouTube.";
+"Vídeos disponíveis somente no NEXUS FEED 🎬";
 
 }
-
-}
-
 
 async function loadCloudinary(){
 
