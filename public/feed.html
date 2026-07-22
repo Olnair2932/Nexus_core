@@ -70,7 +70,7 @@ video{
 </div>
 
 
-<div class="feed">
+<div class="feed" id="feedVideos">
 
 <div class="card">
 
@@ -135,6 +135,56 @@ auth.onAuthStateChanged(user => {
     }
 
 });
+</script>
+
+
+<script>
+async function carregarFeedVideos(){
+
+    const feed = document.getElementById("feedVideos");
+
+    try{
+        const resposta = await fetch("/api/videos");
+        const videos = await resposta.json();
+
+        if(!videos.length){
+            feed.innerHTML = "Nenhum vídeo disponível.";
+            return;
+        }
+
+        feed.innerHTML = videos.map(video => `
+            <div class="card">
+
+                <video controls playsinline>
+                    <source src="${video.url}">
+                </video>
+
+                <div class="info">
+                    <h3>${video.titulo}</h3>
+
+                    <span class="action">❤️ 0</span>
+                    <span class="action">💬 0</span>
+                    <span class="action">⭐</span>
+
+                    <span class="action"
+                    onclick="this.closest('.card').querySelector('video').requestFullscreen()">
+                    ⛶
+                    </span>
+                </div>
+
+            </div>
+        `).join("");
+
+    }catch(erro){
+
+        console.error("Erro carregando Feed:", erro);
+        feed.innerHTML = "Erro ao carregar vídeos.";
+
+    }
+
+}
+
+carregarFeedVideos();
 </script>
 
 </body>
