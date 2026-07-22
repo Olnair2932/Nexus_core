@@ -231,9 +231,10 @@ async function salvarFavorito(videoId){
         await ref.set(true);
         alert("⭐ Favorito salvo");
     }
+
+    carregarFeedVideos();
 }
 
-carregarFeedVideos();
 </script>
 
 </body>
