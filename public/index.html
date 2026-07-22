@@ -528,7 +528,7 @@ const r = await fetch("/api/videos");
 const videos = await r.json();
 
 const primeiros =
-videos.slice(0,3);
+videos;
 
 document.getElementById("cloud-list").innerHTML =
 primeiros.map(v=>`

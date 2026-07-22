@@ -34,7 +34,10 @@ router.get(
 
 
             res.json(
-                Object.values(videos)
+                Object.entries(videos).map(([id, video]) => ({
+                    id,
+                    ...video
+                }))
             );
 
 
