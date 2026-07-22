@@ -196,12 +196,19 @@ async function salvarFavorito(videoId){
         return;
     }
 
-    await db.ref(
+    const ref = db.ref(
         `feed_favoritos/${videoId}/${user.uid}`
-    ).set(true);
+    );
 
-    alert("⭐ Favorito salvo");
+    const snapshot = await ref.once("value");
 
+    if(snapshot.exists()){
+        await ref.remove();
+        alert("☆ Favorito removido");
+    } else {
+        await ref.set(true);
+        alert("⭐ Favorito salvo");
+    }
 }
 
 carregarFeedVideos();
