@@ -70,7 +70,23 @@ router.post(
             }
 
 
-            const resultado =
+
+              const listaVideos = await database
+                  .ref("videos")
+                  .once("value");
+
+              const videosExistentes = listaVideos.val() || {};
+
+              const duplicado = Object.values(videosExistentes)
+                  .some(video => video.titulo === req.file.originalname);
+
+              if (duplicado) {
+                  return res.status(409).json({
+                      erro: "Vídeo já existe"
+                  });
+              }
+
+              const resultado =
                 await uploadVideo(
                     req.file.path
                 );
