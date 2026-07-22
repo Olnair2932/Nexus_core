@@ -166,7 +166,7 @@ async function carregarFeedVideos(){
 
                     <span class="action">❤️ 0</span>
                     <span class="action">💬 0</span>
-                    <span class="action">⭐</span>
+                    <span class="action" onclick="salvarFavorito('${video.id || video.public_id}')">⭐</span>
 
                     <span class="action"
                     onclick="this.closest('.card').querySelector('video').requestFullscreen()">
