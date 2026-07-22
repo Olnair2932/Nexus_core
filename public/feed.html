@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Nexus Feed</title>
+
+<style>
+body{
+    margin:0;
+    background:#000;
+    color:white;
+    font-family:Arial, sans-serif;
+}
+
+.top{
+    position:fixed;
+    top:0;
+    width:100%;
+    background:#111;
+    padding:15px;
+    z-index:10;
+}
+
+.top button{
+    background:#00f2ff;
+    border:none;
+    padding:8px 15px;
+    border-radius:10px;
+}
+
+.feed{
+    padding-top:70px;
+}
+
+.card{
+    margin:20px;
+    background:#111;
+    border-radius:20px;
+    overflow:hidden;
+}
+
+video{
+    width:100%;
+    height:70vh;
+    background:#222;
+    object-fit:cover;
+}
+
+.info{
+    padding:15px;
+}
+
+.action{
+    font-size:22px;
+    margin-right:15px;
+    cursor:pointer;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="top">
+<button onclick="history.back()">← Nexus</button>
+<strong>Nexus Feed 🎬</strong>
+</div>
+
+
+<div class="feed">
+
+<div class="card">
+
+<video controls>
+</video>
+
+<div class="info">
+
+<h3>
+Usuário Nexus
+</h3>
+
+<p>
+Título do vídeo
+</p>
+
+<span class="action">❤️ 0</span>
+
+<span class="action">💬 0</span>
+
+<span class="action">⭐</span>
+
+<span class="action"
+onclick="document.querySelector('video').requestFullscreen()">
+⛶
+</span>
+
+</div>
+
+</div>
+
+</div>
+
+
+</body>
+</html>
