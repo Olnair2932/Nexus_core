@@ -7,259 +7,204 @@
 <title>Nexus Feed</title>
 
 <style>
+
 body{
-    margin:0;
-    background:#000;
-    color:white;
-    font-family:Arial,sans-serif;
+margin:0;
+background:#000;
+color:white;
+font-family:Arial,sans-serif;
 }
 
 .top{
-    position:fixed;
-    top:0;
-    width:100%;
-    background:#111;
-    padding:15px;
-    z-index:20;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+background:#111;
+padding:15px;
+z-index:20;
+display:flex;
+gap:15px;
+align-items:center;
 }
 
 button{
-    background:#00f2ff;
-    border:0;
-    padding:8px 15px;
-    border-radius:10px;
-    cursor:pointer;
+background:#00f2ff;
+border:0;
+padding:10px;
+border-radius:10px;
+cursor:pointer;
 }
 
 .feed{
-    padding-top:70px;
+padding-top:70px;
 }
 
 .card{
-    margin:20px;
-    background:#111;
-    border-radius:20px;
-    overflow:hidden;
+margin:20px;
+background:#111;
+border-radius:20px;
+overflow:hidden;
 }
 
 video{
-    width:100%;
-    height:70vh;
-    background:#222;
-    object-fit:cover;
+width:100%;
+height:70vh;
+object-fit:cover;
+background:#222;
 }
 
 .info{
-    padding:15px;
+padding:15px;
 }
 
-.acoes{
-    padding:10px 15px;
-    border-top:1px solid #333;
+
+#painel{
+
+display:none;
+
+position:fixed;
+top:70px;
+right:10px;
+
+width:90%;
+max-width:400px;
+
+height:70vh;
+
+overflow:auto;
+
+background:#111;
+
+border-radius:20px;
+
+padding:20px;
+
+z-index:30;
+
 }
 
-.acao{
-    color:#00f2ff;
-    cursor:pointer;
-    margin-right:20px;
+
+.item{
+
+background:#222;
+padding:10px;
+margin:10px 0;
+border-radius:10px;
+
 }
 
-.comentarios{
-    padding:15px;
+
+.item button{
+
+background:red;
+color:white;
+
 }
 
-.comentarios input{
-    width:70%;
-    padding:10px;
-    border-radius:10px;
-    border:0;
-}
 
-.comentarios button{
-    margin-left:5px;
-}
-
-.comentario{
-    margin-top:8px;
-    color:#ddd;
-}
-
-.painel{
-    display:none;
-    position:fixed;
-    top:60px;
-    right:10px;
-    width:90%;
-    max-height:80vh;
-    overflow:auto;
-    background:#111;
-    border-radius:20px;
-    padding:20px;
-    z-index:30;
-}
-
-.videoLista{
-    border-bottom:1px solid #333;
-    padding:10px;
-}
-
-.fechar{
-    background:#444;
-    color:white;
-}
 </style>
 
 </head>
 
+
 <body>
 
+
 <div class="top">
-<strong>Nexus Feed</strong>
-<button onclick="abrirGerenciador()">Gerenciar vídeos</button>
+
+<button onclick="abrirPainel()">
+Gerenciar vídeos
+</button>
+
+
+<strong>
+Nexus Feed
+</strong>
+
+
 </div>
 
-<div id="gerenciador" class="painel">
 
-<h3>Upload Cloudinary</h3>
 
-<input type="file" id="videoUpload" accept="video/*">
+<div id="feedVideos" class="feed">
 
-<button onclick="uploadCloudinary()">
+</div>
+
+
+
+<div id="painel">
+
+
+<h3>
+Upload Cloudinary
+</h3>
+
+
+<input 
+id="arquivo"
+type="file"
+accept="video/*"
+>
+
+
+<br><br>
+
+
+<button onclick="enviarVideo()">
 Enviar vídeo
 </button>
 
-<h3>Lista de vídeos</h3>
 
-<div id="listaVideos"></div>
+<hr>
 
-<button class="fechar" onclick="fecharGerenciador()">
-Fechar
-</button>
+
+<h3>
+Lista de vídeos
+</h3>
+
+
+<div id="lista">
 
 </div>
 
 
-<div class="feed" id="feedVideos"></div>
+<button onclick="fecharPainel()">
+Fechar
+</button>
 
 
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+</div>
+
+
+
 
 <script>
 
-const firebaseConfig = {
-apiKey:"AIzaSyCTX4Bgjd7T0WV_KkHnJm7Tgk3CodyO6dM",
-authDomain:"nexus-core-42ebb.firebaseapp.com",
-databaseURL:"https://nexus-core-42ebb-default-rtdb.firebaseio.com",
-projectId:"nexus-core-42ebb",
-storageBucket:"nexus-core-42ebb.firebasestorage.app",
-messagingSenderId:"733318174781",
-appId:"1:733318174781:web:979c38a62c1c5620b17254"
-};
 
-firebase.initializeApp(firebaseConfig);
+async function carregarFeed(){
 
-const db=firebase.database();
-
-cat >> feed.html <<'EOF'
-
-async function carregarFeedVideos(){
 
 const feed=document.getElementById("feedVideos");
 
+
 try{
+
 
 const resposta=await fetch("/api/videos");
 
 const videos=await resposta.json();
 
 
-if(!videos.length){
 
-feed.innerHTML="Nenhum vídeo disponível.";
-
-return;
-
-}
-
-
-const user=firebase.auth().currentUser;
-
-
-let html="";
-
-
-for(const video of videos){
-
-
-const id=video.id;
-
-
-let curtidas=0;
-
-let curtido=false;
-
-
-const likes=await db
-.ref("feed_curtidas/"+id)
-.once("value");
-
-
-if(likes.exists()){
-
-curtidas=Object.keys(likes.val()).length;
-
-}
-
-
-if(user){
-
-const meuLike=await db
-.ref("feed_curtidas/"+id+"/"+user.uid)
-.once("value");
-
-
-curtido=meuLike.exists();
-
-}
+feed.innerHTML="";
 
 
 
-const comentarios=await db
-.ref("feed_comentarios/"+id)
-.once("value");
+videos.reverse().forEach(video=>{
 
 
-let listaComentarios="";
-
-
-if(comentarios.exists()){
-
-Object.values(comentarios.val()).forEach(c=>{
-
-listaComentarios+=`
-
-<div class="comentario">
-${c.texto}
-</div>
-
-`;
-
-});
-
-}else{
-
-listaComentarios="Nenhum comentário";
-
-}
-
-
-
-html+=`
+feed.innerHTML+=`
 
 <div class="card">
 
@@ -271,58 +216,6 @@ html+=`
 </video>
 
 
-<div class="acoes">
-
-
-<span class="acao"
-onclick="curtirVideo('${id}')">
-
-${curtido ? "Curtido" : "Curtir"} ${curtidas}
-
-</span>
-
-
-</div>
-
-
-
-<div class="comentarios">
-
-
-<div>
-
-Comentar
-
-</div>
-
-
-<input 
-id="comentario_${id}"
-placeholder="Digite seu comentário">
-
-
-<button onclick="comentar('${id}')">
-
-Enviar
-
-</button>
-
-
-
-<div>
-
-Comentários
-
-</div>
-
-
-${listaComentarios}
-
-
-</div>
-
-
-
 <div class="info">
 
 <h3>
@@ -330,124 +223,31 @@ ${video.titulo || "Vídeo Nexus"}
 </h3>
 
 
-<span class="acao"
-onclick="telaCheia(this)">
-
+<button onclick="telaCheia(this)">
 Tela cheia
+</button>
 
-</span>
+
+</div>
 
 
 </div>
 
-
-</div>
 
 `;
 
-}
-
-
-feed.innerHTML=html;
-
-
-}catch(e){
-
-console.error(e);
-
-feed.innerHTML="Erro ao carregar vídeos.";
-
-}
-
-}
-
-
-
-
-async function curtirVideo(id){
-
-
-const user=firebase.auth().currentUser;
-
-
-if(!user){
-
-alert("Faça login para curtir");
-
-return;
-
-}
-
-
-
-const ref=db.ref(
-"feed_curtidas/"+id+"/"+user.uid
-);
-
-
-
-const snap=await ref.once("value");
-
-
-
-if(snap.exists()){
-
-await ref.remove();
-
-}else{
-
-await ref.set(true);
-
-}
-
-
-
-carregarFeedVideos();
-
-
-}
-
-
-
-
-async function comentar(id){
-
-
-const campo=document.getElementById(
-"comentario_"+id
-);
-
-
-const texto=campo.value.trim();
-
-
-if(!texto){
-
-return;
-
-}
-
-
-
-const novo=db
-.ref("feed_comentarios/"+id)
-.push();
-
-
-
-await novo.set({
-
-texto:texto,
-
-data:Date.now()
 
 });
 
 
-campo.value="";
+
+}catch(e){
 
 
-carregarFeedVideos();
+feed.innerHTML="Erro ao carregar vídeos";
+
+
+}
 
 
 }
@@ -455,11 +255,11 @@ carregarFeedVideos();
 
 
 
-function telaCheia(elemento){
+function telaCheia(botao){
 
 
-const video=elemento
-.closest(".card")
+const video=
+botao.closest(".card")
 .querySelector("video");
 
 
@@ -467,10 +267,6 @@ if(video.requestFullscreen){
 
 video.requestFullscreen();
 
-}else if(video.webkitEnterFullscreen){
-
-video.webkitEnterFullscreen();
-
 }
 
 
@@ -478,108 +274,31 @@ video.webkitEnterFullscreen();
 
 
 
-async function abrirGerenciador(){
 
+function abrirPainel(){
 
-document.getElementById(
-"gerenciador"
-).style.display="block";
+document.getElementById("painel").style.display="block";
 
-
-carregarListaCloudinary();
-
+carregarLista();
 
 }
 
 
 
-function fecharGerenciador(){
+function fecharPainel(){
 
-
-document.getElementById(
-"gerenciador"
-).style.display="none";
-
+document.getElementById("painel").style.display="none";
 
 }
 
 
 
-async function carregarListaCloudinary(){
+
+async function enviarVideo(){
 
 
-const div=document.getElementById(
-"listaVideos"
-);
-
-
-try{
-
-
-const resposta=await fetch("/api/videos");
-
-
-const videos=await resposta.json();
-
-
-let html="";
-
-
-videos.forEach(video=>{
-
-
-html+=`
-
-<div class="videoLista">
-
-<strong>
-${video.titulo}
-</strong>
-
-
-<br>
-
-Cloudinary ativo
-
-
-<br>
-
-<a href="${video.url}" target="_blank">
-
-Abrir vídeo
-
-</a>
-
-
-</div>
-
-`;
-
-});
-
-
-div.innerHTML=html;
-
-
-}catch(e){
-
-
-div.innerHTML="Erro ao carregar lista";
-
-
-}
-
-
-}
-
-
-
-async function uploadCloudinary(){
-
-
-const arquivo=document
-.getElementById("videoUpload")
-.files[0];
+const arquivo=
+document.getElementById("arquivo").files[0];
 
 
 if(!arquivo){
@@ -595,40 +314,38 @@ return;
 const dados=new FormData();
 
 
-dados.append(
-"video",
-arquivo
-);
+dados.append("video",arquivo);
 
 
 
-const resposta=await fetch(
-"/api/videos/upload",
-{
+try{
+
+
+const resposta=
+await fetch("/api/videos/upload",{
 
 method:"POST",
 
 body:dados
 
-}
-);
+});
 
 
 
-const resultado=await resposta.json();
+const resultado=
+await resposta.json();
 
 
 
 if(resultado.sucesso){
 
-
 alert("Upload concluído");
 
+document.getElementById("arquivo").value="";
 
-carregarListaCloudinary();
+carregarFeed();
 
-
-carregarFeedVideos();
+carregarLista();
 
 
 }else{
@@ -640,18 +357,115 @@ alert(resultado.erro || "Erro no upload");
 }
 
 
+
+}catch(e){
+
+
+alert("Falha no envio");
+
+
 }
 
 
-firebase.auth()
-.onAuthStateChanged(()=>{
+
+}
 
 
-carregarFeedVideos();
+
+
+
+async function carregarLista(){
+
+
+const lista=document.getElementById("lista");
+
+
+try{
+
+
+const resposta=
+await fetch("/api/videos");
+
+
+const videos=
+await resposta.json();
+
+
+
+lista.innerHTML="";
+
+
+
+videos.forEach(video=>{
+
+
+lista.innerHTML+=`
+
+<div class="item">
+
+
+<strong>
+${video.titulo || "Vídeo"}
+</strong>
+
+
+<br>
+
+
+<small>
+Cloudinary ativo
+</small>
+
+
+<br>
+
+
+<button onclick="abrirVideo('${video.url}')">
+
+Abrir vídeo
+
+</button>
+
+
+</div>
+
+
+`;
 
 
 });
 
 
+
+}catch(e){
+
+
+lista.innerHTML="Erro na lista";
+
+
+}
+
+
+
+}
+
+
+
+
+function abrirVideo(url){
+
+window.open(url,"_blank");
+
+}
+
+
+
+
+carregarFeed();
+
+
 </script>
 
+
+</body>
+</html>
