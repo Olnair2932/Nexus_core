@@ -88,7 +88,9 @@ Usuário Nexus
 Título do vídeo
 </p>
 
-<span class="action">❤️ 0</span>
+<span class="action" onclick="curtirVideo('${videoId}')">
+❤️ ${curtidas || 0}
+</span>
 
 <span class="action">💬 0</span>
 
@@ -162,6 +164,15 @@ async function carregarFeedVideos(){
 
                 const videoId = video.id || video.public_id;
                 let favorito = false;
+                let curtidas = 0;
+
+                const snapCurtidas = await db
+                    .ref(`feed_curtidas/${videoId}`)
+                    .once("value");
+
+                if(snapCurtidas.exists()){
+                    curtidas = Object.keys(snapCurtidas.val()).length;
+                }
 
                 if(user){
                     const snap = await db
@@ -180,7 +191,9 @@ async function carregarFeedVideos(){
                 <div class="info">
                     <h3>${video.titulo}</h3>
 
-                    <span class="action">❤️ 0</span>
+                    <span class="action" onclick="curtirVideo('${videoId}')">
+❤️ ${curtidas || 0}
+</span>
                     <span class="action">💬 0</span>
 
                     <span class="action"
@@ -267,6 +280,29 @@ async function carregarFavoritosFeed(){
 
     }
 
+}
+
+
+async function curtirVideo(videoId){
+
+    const user = firebase.auth().currentUser;
+
+    if(!user){
+        alert("Faça login para curtir");
+        return;
+    }
+
+    const ref = db.ref(`feed_curtidas/${videoId}/${user.uid}`);
+
+    const snap = await ref.once("value");
+
+    if(snap.exists()){
+        await ref.remove();
+    } else {
+        await ref.set(true);
+    }
+
+    carregarFeedVideos();
 }
 
 async function salvarFavorito(videoId){
