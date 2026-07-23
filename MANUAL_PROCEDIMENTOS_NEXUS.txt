@@ -1,0 +1,146 @@
+MANUAL DE PROCEDIMENTOS NEXUS
+Diagnóstico, Correção, Edição, Testes e Versionamento
+
+Versão 2.0
+
+====================================================
+OBJETIVO
+
+Este manual estabelece um procedimento seguro para
+diagnosticar, alterar, testar e versionar projetos
+Node.js compostos por HTML, JavaScript, Firebase,
+Cloudinary, YouTube API e módulos backend.
+
+Princípios:
+
+• Alterar somente o necessário.
+• Evitar regressões.
+• Sempre criar backup.
+• Testar antes do commit.
+• Versionar apenas código validado.
+
+Fluxo oficial:
+
+1. Localizar
+2. Analisar
+3. Backup
+4. Alterar
+5. Testar
+6. Validar
+7. Versionar
+8. Deploy
+9. Validar produção
+
+====================================================
+1 - ENTRAR NO PROJETO
+
+cd ~/temp_nexus
+
+Ver conteúdo:
+
+ls
+
+Detalhado:
+
+ls -la
+
+Estrutura esperada:
+
+public/
+routes/
+services/
+providers/
+server_tuti.js
+package.json
+
+====================================================
+2 - CONFERIR ESTADO DO GIT
+
+Antes de qualquer alteração:
+
+git status
+
+Se houver trabalho colaborativo:
+
+git pull
+
+Ver branch atual:
+
+git branch
+
+====================================================
+3 - LOCALIZAR TRECHOS
+
+Encontrar funções:
+
+grep -n "nome" arquivo
+
+Exemplos:
+
+grep -n "firebase|login|switchTab" public/index.html
+
+grep -n "nexusVideoPlayer" public/index.html
+
+grep -n "router.get|router.post" routes/*.js
+
+Também útil para localizar:
+
+• IDs HTML
+• classes
+• funções JS
+• APIs
+• rotas
+• Firebase
+• Cloudinary
+• YouTube
+
+====================================================
+4 - ANALISAR O CONTEXTO
+
+Nunca editar sem visualizar o bloco.
+
+Exemplo:
+
+sed -n '650,720p' public/index.html
+
+Formato:
+
+sed -n 'linhaInicial,linhaFinalp' arquivo
+
+====================================================
+5 - CRIAR BACKUP
+
+Antes de modificar:
+
+cp public/index.html \
+public/index.html.backup_nome
+
+Listar backups:
+
+ls public | grep backup
+
+Restaurar:
+
+cp public/index.html.backup_nome \
+public/index.html
+
+====================================================
+6 - ALTERAR COM PYTHON EOF
+
+Modelo padrão:
+
+python3 <<'EOF'
+from pathlib import Path
+
+p = Path("arquivo")
+
+txt = p.read_text(encoding="utf-8")
+
+txt = txt.replace(
+"código antigo",
+"código novo"
+)
+
+p.write_text(txt, encoding="utf-8")
+
+print("Alteração concluída")
