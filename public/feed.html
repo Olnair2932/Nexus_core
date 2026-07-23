@@ -94,7 +94,7 @@ ${curtiu ? "💙" : "🤍"} ${curtidas || 0}
 
 <span class="action" onclick="abrirComentarios('${videoId}')">💬 ${comentarios}</span>
 
-<span class="action" onclick="salvarFavorito('${video.id || video.public_id}')"></span>
+<span class="action" onclick="('${video.id || video.public_id}')"></span>
 
 <span class="action"
 onclick="document.querySelector('video').requestFullscreen()">
@@ -185,11 +185,7 @@ async function carregarFeedVideos(){
                 }
 
                 if(user){
-                    const snap = await db
-                        .ref(`/${videoId}/${user.uid}`)
-                        .once("value");
-
-                    favorito = snap.exists();
+                    
 
                     const snapCurtiu = await db
                         .ref(`feed_curtidas/${videoId}/${user.uid}`)
@@ -212,10 +208,7 @@ ${curtiu ? "💙" : "🤍"} ${curtidas || 0}
 </span>
                     <span class="action" onclick="abrirComentarios('${videoId}')">💬 ${comentarios}</span>
 
-                    <span class="action"
-                    onclick="salvarFavorito('${videoId}')">
-                    ${favorito ? "" : "☆"}
-                    </span>
+                    
 
                     <span class="action"
                     onclick="this.closest('.card').querySelector('video').requestFullscreen()">
@@ -241,14 +234,14 @@ ${curtiu ? "💙" : "🤍"} ${curtidas || 0}
 
 
 
-async function carregarFavoritosFeed(){
+async function Feed(){
 
-    const lista = document.getElementById("feed-favoritos-list");
+    const lista = document.getElementById("feed-s-list");
 
     const user = firebase.auth().currentUser;
 
     if(!user){
-        lista.innerHTML = "Faça login para ver favoritos.";
+        lista.innerHTML = "Faça login para ver s.";
         return;
     }
 
@@ -266,12 +259,12 @@ async function carregarFavoritosFeed(){
         const resposta = await fetch("/api/videos");
         const videos = await resposta.json();
 
-        const favoritos = videos.filter(video =>
+        const s = videos.filter(video =>
             meusIds.includes(video.id || video.public_id)
         );
 
         lista.innerHTML =
-            favoritos.map(video => `
+            s.map(video => `
                 <div class="card">
                     <video controls playsinline>
                         <source src="${video.url}">
@@ -281,18 +274,18 @@ async function carregarFavoritosFeed(){
                         <h3>${video.titulo}</h3>
 
                         <span class="action"
-                        onclick="salvarFavorito('${video.id || video.public_id}')">
+                        onclick="('${video.id || video.public_id}')">
                         
                         </span>
                     </div>
                 </div>
             `).join("")
-            || "Nenhum favorito salvo.";
+            || "Nenhum  salvo.";
 
     }catch(e){
 
-        console.error("Erro favoritos Feed:", e);
-        lista.innerHTML = "Erro carregando favoritos.";
+        console.error("Erro s Feed:", e);
+        lista.innerHTML = "";
 
     }
 
@@ -321,57 +314,21 @@ async function curtirVideo(videoId){
     carregarFeedVideos();
 }
 
-async function salvarFavorito(videoId){
 
-    const user = firebase.auth().currentUser;
-
-    console.log("Usuário:", user);
-    console.log("Vídeo:", videoId);
-
-    if(!user){
-        alert("Faça login para favoritar");
-        return;
-    }
-
-    try{
-
-        const ref = db.ref(
-            `/${videoId}/${user.uid}`
-        );
-
-        const snapshot = await ref.once("value");
-
-        if(snapshot.exists()){
-            await ref.remove();
-            console.log("Favorito removido");
-            alert("☆ Favorito removido");
-        }else{
-            await ref.set(true);
-            console.log("Favorito salvo");
-            alert(" Favorito salvo");
-        }
-
-    }catch(e){
-
-        console.error("Erro ao salvar favorito:", e);
-        alert("Erro: " + e.message);
-
-    }
-}
 
 firebase.auth().onAuthStateChanged(async (user) => {
     await carregarFeedVideos();
 
     if(user){
-        await carregarFavoritosFeed();
+        await Feed();
     }
 });
 </script>
 
 
-<div id="feed-favoritos" style="margin:20px;">
+<div id="feed-s" style="margin:20px;">
 <h3></h3>
-<div id="feed-favoritos-list"></div>
+<div id="feed-s-list"></div>
 </div>
 
 </body>
