@@ -89,7 +89,7 @@ Título do vídeo
 </p>
 
 <span class="action" onclick="curtirVideo('${videoId}')">
-❤️ ${curtidas || 0}
+${curtiu ? "💙" : "🤍"} ${curtidas || 0}
 </span>
 
 <span class="action">💬 0</span>
@@ -164,6 +164,7 @@ async function carregarFeedVideos(){
 
                 const videoId = video.id || video.public_id;
                 let favorito = false;
+                let curtiu = false;
                 let curtidas = 0;
 
                 const snapCurtidas = await db
@@ -180,6 +181,12 @@ async function carregarFeedVideos(){
                         .once("value");
 
                     favorito = snap.exists();
+
+                    const snapCurtiu = await db
+                        .ref(`feed_curtidas/${videoId}/${user.uid}`)
+                        .once("value");
+
+                    curtiu = snapCurtiu.exists();
                 }
 
                 return `
@@ -192,7 +199,7 @@ async function carregarFeedVideos(){
                     <h3>${video.titulo}</h3>
 
                     <span class="action" onclick="curtirVideo('${videoId}')">
-❤️ ${curtidas || 0}
+${curtiu ? "💙" : "🤍"} ${curtidas || 0}
 </span>
                     <span class="action">💬 0</span>
 
