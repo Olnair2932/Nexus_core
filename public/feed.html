@@ -7,329 +7,465 @@
 <title>Nexus Feed</title>
 
 <style>
+
 body{
-    margin:0;
-    background:#000;
-    color:white;
-    font-family:Arial, sans-serif;
+margin:0;
+background:#000;
+color:white;
+font-family:Arial,sans-serif;
 }
 
 .top{
-    position:fixed;
-    top:0;
-    width:100%;
-    background:#111;
-    padding:15px;
-    z-index:10;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+background:#111;
+padding:15px;
+z-index:20;
+display:flex;
+gap:15px;
+align-items:center;
 }
 
-.top button{
-    background:#00f2ff;
-    border:none;
-    padding:8px 15px;
-    border-radius:10px;
+button{
+background:#00f2ff;
+border:0;
+padding:10px;
+border-radius:10px;
+cursor:pointer;
 }
 
 .feed{
-    padding-top:70px;
+padding-top:70px;
 }
 
 .card{
-    margin:20px;
-    background:#111;
-    border-radius:20px;
-    overflow:hidden;
+margin:20px;
+background:#111;
+border-radius:20px;
+overflow:hidden;
 }
 
 video{
-    width:100%;
-    height:70vh;
-    background:#222;
-    object-fit:cover;
+width:100%;
+height:70vh;
+object-fit:cover;
+background:#222;
 }
 
 .info{
-    padding:15px;
+padding:15px;
 }
 
-.action{
-    font-size:22px;
-    margin-right:15px;
-    cursor:pointer;
+
+#painel{
+
+display:none;
+
+position:fixed;
+top:70px;
+right:10px;
+
+width:90%;
+max-width:400px;
+
+height:70vh;
+
+overflow:auto;
+
+background:#111;
+
+border-radius:20px;
+
+padding:20px;
+
+z-index:30;
+
 }
+
+
+.item{
+
+background:#222;
+padding:10px;
+margin:10px 0;
+border-radius:10px;
+
+}
+
+
+.item button{
+
+background:red;
+color:white;
+
+}
+
 
 </style>
 
 </head>
 
+
 <body>
 
+
 <div class="top">
-<button onclick="history.back()">← Nexus</button>
-<strong>Nexus Feed 🎬</strong>
+
+<button onclick="abrirPainel()">
+Gerenciar vídeos
+</button>
+
+
+<strong>
+Nexus Feed
+</strong>
+
+
 </div>
 
 
 
-<div class="feed" id="feedVideos">
+<div id="feedVideos" class="feed">
+
+</div>
+
+
+
+<div id="painel">
+
+
+<h3>
+Upload Cloudinary
+</h3>
+
+
+<input 
+id="arquivo"
+type="file"
+accept="video/*"
+>
+
+
+<br><br>
+
+
+<button onclick="enviarVideo()">
+Enviar vídeo
+</button>
+
+
+<hr>
+
+
+<h3>
+Lista de vídeos
+</h3>
+
+
+<div id="lista">
+
+</div>
+
+
+<button onclick="fecharPainel()">
+Fechar
+</button>
+
+
+</div>
+
+
+
+
+<script>
+
+
+async function carregarFeed(){
+
+
+const feed=document.getElementById("feedVideos");
+
+
+try{
+
+
+const resposta=await fetch("/api/videos");
+
+const videos=await resposta.json();
+
+
+
+feed.innerHTML="";
+
+
+
+videos.reverse().forEach(video=>{
+
+
+feed.innerHTML+=`
 
 <div class="card">
 
-<video controls>
+
+<video controls playsinline>
+
+<source src="${video.url}">
+
 </video>
+
 
 <div class="info">
 
 <h3>
-Usuário Nexus
+${video.titulo || "Vídeo Nexus"}
 </h3>
 
-<p>
-Título do vídeo
-</p>
 
-<span class="action" onclick="curtirVideo('${videoId}')">
-${curtiu ? "💙" : "🤍"} ${curtidas || 0}
-</span>
+<button onclick="telaCheia(this)">
+Tela cheia
+</button>
 
-<span class="action" onclick="abrirComentarios('${videoId}')">💬 ${comentarios}</span>
-
-<span class="action" onclick="('${video.id || video.public_id}')"></span>
-
-<span class="action"
-onclick="document.querySelector('video').requestFullscreen()">
-⛶
-</span>
-
-</div>
-
-</div>
 
 </div>
 
 
+</div>
 
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyCTX4Bgjd7T0WV_KkHnJm7Tgk3CodyO6dM",
-  authDomain: "nexus-core-42ebb.firebaseapp.com",
-  databaseURL: "https://nexus-core-42ebb-default-rtdb.firebaseio.com",
-  projectId: "nexus-core-42ebb",
-  storageBucket: "nexus-core-42ebb.firebasestorage.app",
-  messagingSenderId: "733318174781",
-  appId: "1:733318174781:web:979c38a62c1c5620b17254"
-};
+`;
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-
-const auth = firebase.auth();
-
-auth.onAuthStateChanged(user => {
-
-    const usuario = document.querySelector('.info h3');
-
-    if(user){
-        usuario.innerText = user.displayName || "Usuário Nexus";
-    } else {
-        usuario.innerText = "Usuário Nexus";
-    }
 
 });
-</script>
 
 
-<script>
-async function carregarFeedVideos(){
 
-    const feed = document.getElementById("feedVideos");
+}catch(e){
 
-    try{
-        const resposta = await fetch("/api/videos");
-        const videos = await resposta.json();
 
-        if(!videos.length){
-            feed.innerHTML = "Nenhum vídeo disponível.";
-            return;
-        }
+feed.innerHTML="Erro ao carregar vídeos";
 
-        const user = firebase.auth().currentUser;
 
-        const cards = await Promise.all(
-            videos.map(async video => {
+}
 
-                const videoId = video.id || video.public_id;
-                
-                let curtiu = false;
-                let curtidas = 0;
-                let comentarios = 0;
-
-                const snapCurtidas = await db
-                    .ref(`feed_curtidas/${videoId}`)
-                    .once("value");
-
-                if(snapCurtidas.exists()){
-                    curtidas = Object.keys(snapCurtidas.val()).length;
-                }
-
-                const snapComentarios = await db
-                    .ref(`feed_comentarios/${videoId}`)
-                    .once("value");
-
-                if(snapComentarios.exists()){
-                    comentarios = Object.keys(snapComentarios.val()).length;
-                }
-
-                if(user){
-                    
-
-                    const snapCurtiu = await db
-                        .ref(`feed_curtidas/${videoId}/${user.uid}`)
-                        .once("value");
-
-                    curtiu = snapCurtiu.exists();
-                }
-
-                return `
-            <div class="card">
-                <video controls playsinline>
-                    <source src="${video.url}">
-                </video>
-
-                <div class="info">
-                    <h3>${video.titulo}</h3>
-
-                    <span class="action" onclick="curtirVideo('${videoId}')">
-${curtiu ? "💙" : "🤍"} ${curtidas || 0}
-</span>
-                    <span class="action" onclick="abrirComentarios('${videoId}')">💬 ${comentarios}</span>
-
-                    
-
-                    <span class="action"
-                    onclick="this.closest('.card').querySelector('video').requestFullscreen()">
-                    ⛶
-                    </span>
-                </div>
-            </div>
-                `;
-            })
-        );
-
-        feed.innerHTML = cards.join("");
-
-    }catch(erro){
-
-        console.error("Erro carregando Feed:", erro);
-        feed.innerHTML = "Erro ao carregar vídeos.";
-
-    }
 
 }
 
 
 
 
-async function Feed(){
+function telaCheia(botao){
 
-    const lista = document.getElementById("feed-s-list");
 
-    const user = firebase.auth().currentUser;
+const video=
+botao.closest(".card")
+.querySelector("video");
 
-    if(!user){
-        lista.innerHTML = "Faça login para ver s.";
-        return;
-    }
 
-    try{
+if(video.requestFullscreen){
 
-        const snap = await db
-            .ref("")
-            .once("value");
-
-        const dados = snap.val() || {};
-
-        const meusIds = Object.keys(dados)
-            .filter(id => dados[id][user.uid]);
-
-        const resposta = await fetch("/api/videos");
-        const videos = await resposta.json();
-
-        const s = videos.filter(video =>
-            meusIds.includes(video.id || video.public_id)
-        );
-
-        lista.innerHTML =
-            s.map(video => `
-                <div class="card">
-                    <video controls playsinline>
-                        <source src="${video.url}">
-                    </video>
-
-                    <div class="info">
-                        <h3>${video.titulo}</h3>
-
-                        <span class="action"
-                        onclick="('${video.id || video.public_id}')">
-                        
-                        </span>
-                    </div>
-                </div>
-            `).join("")
-            || "Nenhum  salvo.";
-
-    }catch(e){
-
-        console.error("Erro s Feed:", e);
-        lista.innerHTML = "";
-
-    }
+video.requestFullscreen();
 
 }
 
 
-async function curtirVideo(videoId){
-
-    const user = firebase.auth().currentUser;
-
-    if(!user){
-        alert("Faça login para curtir");
-        return;
-    }
-
-    const ref = db.ref(`feed_curtidas/${videoId}/${user.uid}`);
-
-    const snap = await ref.once("value");
-
-    if(snap.exists()){
-        await ref.remove();
-    } else {
-        await ref.set(true);
-    }
-
-    carregarFeedVideos();
 }
 
 
 
-firebase.auth().onAuthStateChanged(async (user) => {
-    await carregarFeedVideos();
 
-    if(user){
-        await Feed();
-    }
+function abrirPainel(){
+
+document.getElementById("painel").style.display="block";
+
+carregarLista();
+
+}
+
+
+
+function fecharPainel(){
+
+document.getElementById("painel").style.display="none";
+
+}
+
+
+
+
+async function enviarVideo(){
+
+
+const arquivo=
+document.getElementById("arquivo").files[0];
+
+
+if(!arquivo){
+
+alert("Escolha um vídeo");
+
+return;
+
+}
+
+
+
+const dados=new FormData();
+
+
+dados.append("video",arquivo);
+
+
+
+try{
+
+
+const resposta=
+await fetch("/api/videos/upload",{
+
+method:"POST",
+
+body:dados
+
 });
+
+
+
+const resultado=
+await resposta.json();
+
+
+
+if(resultado.sucesso){
+
+alert("Upload concluído");
+
+document.getElementById("arquivo").value="";
+
+carregarFeed();
+
+carregarLista();
+
+
+}else{
+
+
+alert(resultado.erro || "Erro no upload");
+
+
+}
+
+
+
+}catch(e){
+
+
+alert("Falha no envio");
+
+
+}
+
+
+
+}
+
+
+
+
+
+async function carregarLista(){
+
+
+const lista=document.getElementById("lista");
+
+
+try{
+
+
+const resposta=
+await fetch("/api/videos");
+
+
+const videos=
+await resposta.json();
+
+
+
+lista.innerHTML="";
+
+
+
+videos.forEach(video=>{
+
+
+lista.innerHTML+=`
+
+<div class="item">
+
+
+<strong>
+${video.titulo || "Vídeo"}
+</strong>
+
+
+<br>
+
+
+<small>
+Cloudinary ativo
+</small>
+
+
+<br>
+
+
+<button onclick="abrirVideo('${video.url}')">
+
+Abrir vídeo
+
+</button>
+
+
+</div>
+
+
+`;
+
+
+});
+
+
+
+}catch(e){
+
+
+lista.innerHTML="Erro na lista";
+
+
+}
+
+
+
+}
+
+
+
+
+function abrirVideo(url){
+
+window.open(url,"_blank");
+
+}
+
+
+
+
+carregarFeed();
+
+
 </script>
 
-
-<div id="feed-s" style="margin:20px;">
-<h3></h3>
-<div id="feed-s-list"></div>
-</div>
 
 </body>
 </html>
