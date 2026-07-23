@@ -92,7 +92,7 @@ Título do vídeo
 ${curtiu ? "💙" : "🤍"} ${curtidas || 0}
 </span>
 
-<span class="action">💬 0</span>
+<span class="action" onclick="abrirComentarios('${videoId}')">💬 ${comentarios}</span>
 
 <span class="action" onclick="salvarFavorito('${video.id || video.public_id}')"></span>
 
@@ -166,6 +166,7 @@ async function carregarFeedVideos(){
                 
                 let curtiu = false;
                 let curtidas = 0;
+                let comentarios = 0;
 
                 const snapCurtidas = await db
                     .ref(`feed_curtidas/${videoId}`)
@@ -173,6 +174,14 @@ async function carregarFeedVideos(){
 
                 if(snapCurtidas.exists()){
                     curtidas = Object.keys(snapCurtidas.val()).length;
+                }
+
+                const snapComentarios = await db
+                    .ref(`feed_comentarios/${videoId}`)
+                    .once("value");
+
+                if(snapComentarios.exists()){
+                    comentarios = Object.keys(snapComentarios.val()).length;
                 }
 
                 if(user){
@@ -201,7 +210,7 @@ async function carregarFeedVideos(){
                     <span class="action" onclick="curtirVideo('${videoId}')">
 ${curtiu ? "💙" : "🤍"} ${curtidas || 0}
 </span>
-                    <span class="action">💬 0</span>
+                    <span class="action" onclick="abrirComentarios('${videoId}')">💬 ${comentarios}</span>
 
                     <span class="action"
                     onclick="salvarFavorito('${videoId}')">
