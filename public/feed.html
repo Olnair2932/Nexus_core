@@ -94,7 +94,7 @@ ${curtiu ? "💙" : "🤍"} ${curtidas || 0}
 
 <span class="action">💬 0</span>
 
-<span class="action" onclick="salvarFavorito('${video.id || video.public_id}')">⭐</span>
+<span class="action" onclick="salvarFavorito('${video.id || video.public_id}')"></span>
 
 <span class="action"
 onclick="document.querySelector('video').requestFullscreen()">
@@ -163,7 +163,7 @@ async function carregarFeedVideos(){
             videos.map(async video => {
 
                 const videoId = video.id || video.public_id;
-                let favorito = false;
+                
                 let curtiu = false;
                 let curtidas = 0;
 
@@ -177,7 +177,7 @@ async function carregarFeedVideos(){
 
                 if(user){
                     const snap = await db
-                        .ref(`feed_favoritos/${videoId}/${user.uid}`)
+                        .ref(`/${videoId}/${user.uid}`)
                         .once("value");
 
                     favorito = snap.exists();
@@ -205,7 +205,7 @@ ${curtiu ? "💙" : "🤍"} ${curtidas || 0}
 
                     <span class="action"
                     onclick="salvarFavorito('${videoId}')">
-                    ${favorito ? "⭐" : "☆"}
+                    ${favorito ? "" : "☆"}
                     </span>
 
                     <span class="action"
@@ -246,7 +246,7 @@ async function carregarFavoritosFeed(){
     try{
 
         const snap = await db
-            .ref("feed_favoritos")
+            .ref("")
             .once("value");
 
         const dados = snap.val() || {};
@@ -273,7 +273,7 @@ async function carregarFavoritosFeed(){
 
                         <span class="action"
                         onclick="salvarFavorito('${video.id || video.public_id}')">
-                        ⭐
+                        
                         </span>
                     </div>
                 </div>
@@ -327,7 +327,7 @@ async function salvarFavorito(videoId){
     try{
 
         const ref = db.ref(
-            `feed_favoritos/${videoId}/${user.uid}`
+            `/${videoId}/${user.uid}`
         );
 
         const snapshot = await ref.once("value");
@@ -339,7 +339,7 @@ async function salvarFavorito(videoId){
         }else{
             await ref.set(true);
             console.log("Favorito salvo");
-            alert("⭐ Favorito salvo");
+            alert(" Favorito salvo");
         }
 
     }catch(e){
@@ -361,7 +361,7 @@ firebase.auth().onAuthStateChanged(async (user) => {
 
 
 <div id="feed-favoritos" style="margin:20px;">
-<h3>⭐ Meus Favoritos</h3>
+<h3></h3>
 <div id="feed-favoritos-list"></div>
 </div>
 
