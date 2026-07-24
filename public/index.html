@@ -292,10 +292,14 @@ margin-top:8px;
             document.getElementById('tab-fav').className = t === 'fav' ? 'tab-btn active' : 'tab-btn';
 document.getElementById('tab-cloud').className = t === 'cloud' ? 'tab-btn active' : 'tab-btn';
 document.getElementById('tab-youtube').className = t === 'youtube' ? 'tab-btn active' : 'tab-btn';
-            if (t === 'lib') loadLibrary();
-else if (t === 'fav') carregarMinhaPlaylist();
-else if (t === 'cloud') loadCloudinary();
-else loadYoutube();
+            if (t === 'lib' || t === 'fav') {
+        document.getElementById("item-list").style.display = "flex";
+    }
+
+    if (t === 'lib') loadLibrary();
+    else if (t === 'fav') carregarMinhaPlaylist();
+    else if (t === 'cloud') loadCloudinary();
+    else loadYoutube();
         }
 
 
