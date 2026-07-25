@@ -18,6 +18,16 @@ const {
     lerPreferencias
 } = require("../services/nexus_preferencias");
 
+
+const {
+    ativarNexa
+} = require("../services/nexa_trigger");
+
+
+const {
+    processar
+} = require("../services/nexa_core");
+
 const path = require("path");
 const fs = require("fs");
 
@@ -51,6 +61,31 @@ router.post("/chat", async (req, res) => {
 
     const uid =
         req.body.uid || null;
+
+
+    if (ativarNexa(texto)) {
+
+        const respostaNexa =
+            await processar(texto);
+
+        return res.json({
+
+            nexus:
+                respostaNexa.resposta,
+
+            fonte: "nexa",
+
+            url: null,
+
+            videoId: null,
+
+            arquivo: null,
+
+            memoria: false
+
+        });
+
+    }
 
 
     let comandoGemini = null;
