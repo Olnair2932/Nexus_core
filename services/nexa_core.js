@@ -1,5 +1,7 @@
 
-const brain = require("./nexa_brain.json");
+const {
+    carregar
+} = require("./nexa_memory");
 
 
 async function processar(texto) {
@@ -13,7 +15,7 @@ async function processar(texto) {
         entrada: texto,
 
         memoria:
-            brain,
+            carregar(),
 
         resposta:
             "NEXA local ativada."

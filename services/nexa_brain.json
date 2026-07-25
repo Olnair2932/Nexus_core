@@ -4,6 +4,8 @@
     "aprender": [],
     "lembrar": []
   },
-  "preferencias": {},
+  "preferencias": {
+    "nome": "NEXA"
+  },
   "padroes": {}
 }
