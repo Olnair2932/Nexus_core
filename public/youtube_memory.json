@@ -1,4 +1,13 @@
 {
-  "musicas": {},
+  "musicas": {
+    "marilia mendonca infiel": {
+      "titulo": "Marília Mendonça - Infiel (Vídeo Oficial)",
+      "pedido": "Marília Mendonça Infiel",
+      "url": "https://www.youtube.com/watch?v=eCyMh-mZ1B0",
+      "videoId": "eCyMh-mZ1B0",
+      "vezes": 1,
+      "atualizado": 1785095101785
+    }
+  },
   "falhas": []
 }

@@ -157,16 +157,10 @@ salvarMusica(resultado);
 
                             if (resultadoYoutube) {
 
-                                salvarMusica(resultadoYoutube);
-
-                                if (uid) {
-
-                                    await salvarPlaylistFirebase(
-                                        resultadoYoutube,
-                                        uid
-                                    );
-
-                                }
+                                console.log(
+                                      "YouTube aprendido na memória auxiliar:",
+                                      resultadoYoutube.titulo
+                                  );
 
                             }
 
