@@ -1,4 +1,8 @@
 const axios = require("axios");
+const {
+    buscar: buscarMemoriaYoutube,
+    salvarResultado
+} = require("../services/youtube_memory");
 
 const API =
     "https://www.googleapis.com/youtube/v3/search";
@@ -17,6 +21,14 @@ function normalizar(texto) {
 
 
 async function buscar(pedido) {
+
+    const memoria =
+        await buscarMemoriaYoutube(pedido);
+
+    if (memoria) {
+        return memoria;
+    }
+
 
 
     const chave =
@@ -82,7 +94,7 @@ async function buscar(pedido) {
 
 
 
-        return {
+        const resultado = {
 
             fonte: "youtube",
 
@@ -107,6 +119,13 @@ async function buscar(pedido) {
                 true
 
         };
+
+        await salvarResultado(
+            pedido,
+            resultado
+        );
+
+        return resultado;
 
 
 
