@@ -527,7 +527,7 @@ async function send() {
                 });
                 const data = await response.json();
                 addMsg(data.nexus, 'ai');
-                if(data.videoId) {
+                if(data.fonte === "youtube" && data.videoId) {
 
                     youtubeAtual = {
                         videoId: data.videoId,
