@@ -197,8 +197,9 @@ const resultado =
 
 
         if (
-            resultado.fonte === "youtube" &&
-            resultado.videoId
+            (resultado.fonte === "youtube" ||
+               resultado.fonte === "youtube_memoria") &&
+              resultado.videoId
         ) {
 
             retorno.videoId =
