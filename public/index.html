@@ -628,9 +628,10 @@ async function send() {
                         video.style.display = "none";
 
                         audio.style.display = "block";
+                        console.log("PLAYER LOCAL URL:", data.url);
                         audio.src = data.url;
                         audio.load();
-                        audio.play().catch(()=>{});
+                        audio.play().catch(erro => console.log("PLAYER ERRO:", erro.message));
 
                     }
 
