@@ -143,7 +143,32 @@ async function buscarMusica(pedido) {
             if (resultado) {
 
 
-                salvarMusica(resultado);
+salvarMusica(resultado);
+
+                if (provider.nome === "local") {
+
+                    youtube.buscar(texto)
+                        .then(async resultadoYoutube => {
+
+                            if (resultadoYoutube) {
+
+                                salvarMusica(resultadoYoutube);
+
+                                if (uid) {
+
+                                    await salvarPlaylistFirebase(
+                                        resultadoYoutube,
+                                        uid
+                                    );
+
+                                }
+
+                            }
+
+                        })
+                        .catch(() => {});
+
+                }
 
 
 
