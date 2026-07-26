@@ -515,6 +515,24 @@ function salvarYoutubeAtual() {
     addYoutubeToDB(youtubeAtual);
 }
 
+
+function onYouTubeIframeAPIReady() {
+    console.log("YouTube API pronta");
+
+    if (window.youtubePendente) {
+        window.nexusYT = new YT.Player('youtubePlayer', {
+            height: '180',
+            width: '100%',
+            videoId: window.youtubePendente,
+            playerVars: {
+                autoplay: 1
+            }
+        });
+
+        window.youtubePendente = null;
+    }
+}
+
 async function send() {
             const input = document.getElementById('in');
             const val = input.value.trim();
@@ -553,7 +571,8 @@ async function send() {
 
                     if(window.nexusYT) {
                         window.nexusYT.loadVideoById(data.videoId);
-                    } else {
+
+                    } else if(window.YT && YT.Player) {
 
                         window.nexusYT =
                             new YT.Player('youtubePlayer', {
@@ -564,6 +583,11 @@ async function send() {
                                     autoplay: 1
                                 }
                             });
+
+                    } else {
+
+                        console.log("YouTube API carregando...");
+                        window.youtubePendente = data.videoId;
 
                     }
 
