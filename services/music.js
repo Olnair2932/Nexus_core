@@ -150,6 +150,11 @@ salvarMusica(resultado);
                     youtube.buscar(texto)
                         .then(async resultadoYoutube => {
 
+                            console.log(
+                                "YouTube background respondeu:",
+                                resultadoYoutube
+                            );
+
                             if (resultadoYoutube) {
 
                                 salvarMusica(resultadoYoutube);
@@ -166,7 +171,12 @@ salvarMusica(resultado);
                             }
 
                         })
-                        .catch(() => {});
+                        .catch(erro => {
+                            console.log(
+                                "YouTube background erro:",
+                                erro.message
+                            );
+                        });
 
                 }
 
