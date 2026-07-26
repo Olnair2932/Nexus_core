@@ -114,8 +114,9 @@ function buscar(texto) {
     for (const item of Object.values(memoria.musicas)) {
 
         if (
-            normalizar(item.titulo)
-            .includes(chave)
+            normalizar(item.titulo).includes(chave) ||
+            normalizar(item.pedido).includes(chave) ||
+            chave.includes(normalizar(item.pedido))
         ) {
 
             return {
