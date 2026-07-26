@@ -215,11 +215,14 @@ function salvarMusica(musica) {
 
             memoria.musicas[palavra].push({
 
-                arquivo,
+                  arquivo,
+                  vezes:1,
+                  fonte: musica.fonte || null,
+                  videoId: musica.videoId || null,
+                  url: musica.url || null,
+                  titulo: musica.titulo || arquivo
 
-                vezes:1
-
-            });
+              });
 
 
         }
@@ -392,22 +395,29 @@ async function procurarMemoria(texto, uid) {
 
 
 
+    if (melhor.videoId) {
+
+        return {
+            fonte:"youtube_memoria",
+            titulo:melhor.titulo || melhor.arquivo,
+            arquivo:null,
+            videoId:melhor.videoId,
+            url:melhor.url || null,
+            adicionada:true
+        };
+
+    }
+
     return {
-
         fonte:"memoria",
-
-        titulo:melhor.arquivo,
-
+        titulo:melhor.titulo || melhor.arquivo,
         arquivo:melhor.arquivo,
-
         url:
             "/" +
             encodeURIComponent(
                 melhor.arquivo
             ),
-
         adicionada:true
-
     };
 
 
