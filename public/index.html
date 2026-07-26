@@ -546,7 +546,9 @@ async function send() {
                 });
                 const data = await response.json();
                 addMsg(data.nexus, 'ai');
-                if(data.fonte === "youtube" && data.videoId) {
+                if((data.fonte === "youtube" ||
+                    data.fonte === "youtube_memoria") &&
+                    data.videoId) {
 
                     youtubeAtual = {
                         videoId: data.videoId,
@@ -593,6 +595,47 @@ async function send() {
 
 
                 } else if(data.url) {
+
+                      const urlYoutube = data.url.toLowerCase();
+
+                      if (
+                          urlYoutube.includes("youtube.com") ||
+                          urlYoutube.includes("youtu.be")
+                      ) {
+
+                          const idYoutube = data.videoId ||
+                              urlYoutube.split("v=").pop().split("&")[0];
+
+                          const yt =
+                              document.getElementById('youtubePlayer');
+
+                          yt.style.display = "block";
+
+                          if(window.nexusYT) {
+
+                              window.nexusYT.loadVideoById(idYoutube);
+
+                          } else if(window.YT && YT.Player) {
+
+                              window.nexusYT =
+                                  new YT.Player('youtubePlayer', {
+                                      height:'180',
+                                      width:'100%',
+                                      videoId:idYoutube,
+                                      playerVars:{
+                                          autoplay:1
+                                      }
+                                  });
+
+                          }
+
+                          document.getElementById('track-info').innerText =
+                              "YOUTUBE : " + idYoutube;
+
+                          return;
+
+                      }
+
 
                     const yt =
                         document.getElementById('youtubePlayer');
