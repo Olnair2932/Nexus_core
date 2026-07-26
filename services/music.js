@@ -145,7 +145,10 @@ async function buscarMusica(pedido) {
 
 salvarMusica(resultado);
 
-                if (provider.nome === "local") {
+                if (
+                      provider.nome === "local" ||
+                      provider.nome === "memoria"
+                  ) {
 
                     youtube.buscar(texto)
                         .then(async resultadoYoutube => {
