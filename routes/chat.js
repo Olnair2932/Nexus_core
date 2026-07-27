@@ -6,7 +6,8 @@ const {
 } = require("../services/music");
 
 const {
-    interpretar
+    interpretar,
+    interpretarNexa
 } = require("../services/gemini");
 
 const {
@@ -63,27 +64,22 @@ router.post("/chat", async (req, res) => {
         req.body.uid || null;
 
 
+    let textoProcessado = texto;
+    let nexaAtiva = false;
+
     if (ativarNexa(texto)) {
 
-        const respostaNexa =
-            await processar(texto);
+        nexaAtiva = true;
 
-        return res.json({
+        const resultadoNexa =
+            await interpretarNexa(texto);
 
-            nexus:
-                respostaNexa.resposta,
+        if (resultadoNexa?.pedido) {
 
-            fonte: "nexa",
+            textoProcessado =
+                resultadoNexa.pedido;
 
-            url: null,
-
-            videoId: null,
-
-            arquivo: null,
-
-            memoria: false
-
-        });
+        }
 
     }
 
@@ -95,20 +91,24 @@ router.post("/chat", async (req, res) => {
 
         const preferencias = lerPreferencias();
 
-        comandoGemini =
-            await interpretar(
-                texto,
-                {
-                    historico: carregar(),
-                    preferencias
-                }
-            );
+        if (!nexaAtiva) {
+
+            comandoGemini =
+                await interpretar(
+                    texto,
+                    {
+                        historico: carregar(),
+                        preferencias
+                    }
+                );
+
+        }
 
     } catch {}
 
 
 
-    let buscaFinal = texto;
+    let buscaFinal = textoProcessado;
 
 
     if (

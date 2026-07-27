@@ -149,8 +149,87 @@ ${JSON.stringify(contexto)}
 
 
 
+
+
+async function interpretarNexa(texto) {
+
+    const chave = process.env.GEMINI_API_KEY;
+
+    if (!chave) {
+        console.log("Gemini API não configurada");
+        return null;
+    }
+
+    try {
+
+        const prompt = `
+Você é a NEXA, auxiliar do NEXUS CORE.
+
+Sua função é organizar o pedido do usuário para o NEXUS executar.
+
+Não responda ao usuário.
+Retorne somente JSON válido.
+
+Formato:
+
+{
+ "pedido":"",
+ "tipo":"musica|video|conversa|outro"
+}
+
+Usuário:
+${texto}
+`;
+
+        const resposta = await axios.post(
+            `${API_URL}?key=${chave}`,
+            {
+                contents:[
+                    {
+                        parts:[
+                            {
+                                text: prompt
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                timeout:15000
+            }
+        );
+
+        const saida =
+            resposta.data
+            ?.candidates?.[0]
+            ?.content?.parts?.[0]
+            ?.text;
+
+        if (!saida) {
+            return null;
+        }
+
+        const limpo =
+            saida
+            .replace(/```json/g,"")
+            .replace(/```/g,"")
+            .trim();
+
+        return JSON.parse(limpo);
+
+    } catch(erro) {
+
+        console.log(
+            "NEXA Gemini erro:",
+            erro.message
+        );
+
+        return null;
+    }
+}
+
+
 module.exports = {
-
-    interpretar
-
+    interpretar,
+    interpretarNexa
 };
