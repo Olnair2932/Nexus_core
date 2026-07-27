@@ -157,6 +157,12 @@ router.post("/chat", async (req, res) => {
           return res.json(retorno);
       }
 
+console.log("===== DIAGNÓSTICO YOUTUBE =====");
+console.log("texto:", texto);
+console.log("textoProcessado:", textoProcessado);
+console.log("comandoGemini:", JSON.stringify(comandoGemini, null, 2));
+console.log("buscaFinal:", buscaFinal);
+
 const resultado =
         await buscarMusica({
 
