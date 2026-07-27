@@ -50,6 +50,27 @@ async function buscar(pedido) {
 
     try {
 
+        const texto = String(pedido || "").trim();
+
+        const link =
+            texto.match(
+                /(?:youtu\.be\/|youtube\.com\/watch\?v=|youtube\.com\/shorts\/)([A-Za-z0-9_-]{11})/
+            );
+
+        if (link) {
+
+            const videoId = link[1];
+
+            return {
+                fonte: "youtube",
+                titulo: texto,
+                videoId,
+                url: `https://www.youtube.com/watch?v=${videoId}`,
+                tipo: "youtube",
+                stream: true
+            };
+
+        }
 
         const termo =
             normalizar(pedido);
