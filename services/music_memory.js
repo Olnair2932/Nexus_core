@@ -218,7 +218,7 @@ function salvarMusica(musica) {
                   arquivo,
                   vezes:1,
                   fonte: musica.fonte || null,
-                  videoId: musica.videoId || null,
+                  // videoId removido: music_memory não armazena vídeos do YouTube,
                   url: musica.url || null,
                   titulo: musica.titulo || arquivo
 
@@ -264,7 +264,7 @@ async function procurarMemoria(texto, uid) {
             if (playlist) {
 
                 const itens =
-                    Object.values(playlist);
+                    Object.values(playlist).filter(item => item.arquivo);
 
                 const busca =
                     normalizar(texto).join(" ");
