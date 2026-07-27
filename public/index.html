@@ -284,7 +284,9 @@ document.getElementById('tab-cloud').className = t === 'cloud' ? 'tab-btn active
         document.getElementById("item-list").style.display = "flex";
     }
 
-    if (t === 'lib') loadLibrary();
+    if (t === 'lib')
+
+        loadLibrary();
     else if (t === 'fav') carregarMinhaPlaylist();
     else if (t === 'cloud') loadCloudinary();
     
@@ -546,6 +548,7 @@ async function send() {
                 });
                 const data = await response.json();
                 addMsg(data.nexus, 'ai');
+                falar(data.nexus);
                 if((data.fonte === "youtube" ||
                     data.fonte === "youtube_memoria") &&
                     data.videoId) {
@@ -721,6 +724,20 @@ async function send() {
         }
 
         document.getElementById('in').onkeydown = (e) => { if(e.key === 'Enter') send(); };
+        function falar(texto) {
+            if (!('speechSynthesis' in window)) return;
+
+            speechSynthesis.cancel();
+
+            const voz = new SpeechSynthesisUtterance(texto);
+            voz.lang = "pt-BR";
+            voz.rate = 1;
+            voz.pitch = 1;
+            voz.volume = 1;
+
+            speechSynthesis.speak(voz);
+        }
+
         loadLibrary();
 
 
