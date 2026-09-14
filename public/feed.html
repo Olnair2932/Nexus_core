@@ -413,7 +413,13 @@ const feed=document.getElementById("feedVideos");
 
 try{
 
-const resposta=await fetch("/api/videos");
+const token = user ? await user.getIdToken() : null;
+
+const resposta=await fetch("/api/videos",{
+headers: token
+? {Authorization:"Bearer " + token}
+: {}
+});
 
 const videos=await resposta.json();
 
@@ -933,8 +939,14 @@ document.getElementById("lista");
 
 try{
 
+const token = user ? await user.getIdToken() : null;
+
 const resposta=
-await fetch("/api/videos");
+await fetch("/api/videos",{
+headers: token
+? {Authorization:"Bearer " + token}
+: {}
+});
 
 const videos=
 await resposta.json();
