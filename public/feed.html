@@ -7,6 +7,9 @@
 
 <title>Nexus Feed</title>
 
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
 <style>
 
 body{
@@ -364,6 +367,30 @@ Fechar
 
 <script>
 
+const firebaseConfig = {
+  apiKey: "AIzaSyCTX4Bgjd7T0WV_KkHnJm7Tgk3CodyO6dM",
+  authDomain: "nexus-core-42ebb.firebaseapp.com",
+  databaseURL: "https://nexus-core-42ebb-default-rtdb.firebaseio.com",
+  projectId: "nexus-core-42ebb",
+  storageBucket: "nexus-core-42ebb.firebasestorage.app",
+  messagingSenderId: "733318174781",
+  appId: "1:733318174781:web:979c38a62c1c5620b17254"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+let user = null;
+
+auth.onAuthStateChanged(u => {
+    user = u;
+
+    if (u) {
+        console.log("NEXUS FEED usuário:", u.uid);
+    } else {
+        console.log("NEXUS FEED sem usuário autenticado");
+    }
+});
 
 let videoComentarioAtual = null;
 
