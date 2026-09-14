@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -26,14 +27,16 @@ z-index:20;
 display:flex;
 gap:15px;
 align-items:center;
+box-sizing:border-box;
 }
 
 button{
 background:#00f2ff;
 border:0;
-padding:10px;
+padding:10px 14px;
 border-radius:10px;
 cursor:pointer;
+font-weight:bold;
 }
 
 .feed{
@@ -58,6 +61,23 @@ background:#222;
 padding:15px;
 }
 
+.acoes{
+display:flex;
+gap:8px;
+flex-wrap:wrap;
+margin-top:12px;
+}
+
+.botao-acao{
+background:#222;
+color:white;
+border:1px solid #444;
+}
+
+.botao-acao.curtido{
+background:#ff1744;
+border-color:#ff1744;
+}
 
 #painel{
 
@@ -82,8 +102,9 @@ padding:20px;
 
 z-index:30;
 
-}
+box-sizing:border-box;
 
+}
 
 .item{
 
@@ -94,7 +115,6 @@ border-radius:10px;
 
 }
 
-
 .item button{
 
 background:red;
@@ -102,6 +122,144 @@ color:white;
 
 }
 
+
+/* POPUP DE COMENTÁRIOS */
+
+#popupComentarios{
+
+display:none;
+
+position:fixed;
+
+inset:0;
+
+background:rgba(0,0,0,.75);
+
+z-index:100;
+
+align-items:center;
+
+justify-content:center;
+
+padding:20px;
+
+box-sizing:border-box;
+
+}
+
+#caixaComentarios{
+
+width:100%;
+
+max-width:500px;
+
+max-height:85vh;
+
+background:#111;
+
+border-radius:20px;
+
+padding:20px;
+
+box-sizing:border-box;
+
+display:flex;
+
+flex-direction:column;
+
+}
+
+#listaComentarios{
+
+overflow:auto;
+
+flex:1;
+
+margin:10px 0;
+
+}
+
+.comentario{
+
+background:#222;
+
+padding:12px;
+
+border-radius:12px;
+
+margin-bottom:10px;
+
+word-break:break-word;
+
+}
+
+.data-comentario{
+
+font-size:11px;
+
+color:#999;
+
+margin-top:6px;
+
+}
+
+#textoComentario{
+
+width:100%;
+
+min-height:90px;
+
+resize:vertical;
+
+box-sizing:border-box;
+
+background:#222;
+
+color:white;
+
+border:1px solid #555;
+
+border-radius:12px;
+
+padding:12px;
+
+font-family:Arial,sans-serif;
+
+font-size:15px;
+
+outline:none;
+
+}
+
+#textoComentario:focus{
+
+border-color:#00f2ff;
+
+}
+
+.botoes-popup{
+
+display:flex;
+
+gap:10px;
+
+margin-top:10px;
+
+}
+
+.botoes-popup button{
+
+flex:1;
+
+}
+
+.botao-fechar{
+
+background:#333;
+
+color:white;
+
+}
 
 </style>
 
@@ -117,97 +275,127 @@ color:white;
 Gerenciar vídeos
 </button>
 
-
 <strong>
 Nexus Feed
 </strong>
 
-
 </div>
-
 
 
 <div id="feedVideos" class="feed">
-
 </div>
 
 
-
 <div id="painel">
-
 
 <h3>
 Upload Cloudinary
 </h3>
 
-
-<input 
+<input
 id="arquivo"
 type="file"
 accept="video/*"
 >
 
-
 <br><br>
-
 
 <button onclick="enviarVideo()">
 Enviar vídeo
 </button>
 
-
 <hr>
-
 
 <h3>
 Lista de vídeos
 </h3>
 
-
 <div id="lista">
-
 </div>
-
 
 <button onclick="fecharPainel()">
 Fechar
 </button>
 
-
 </div>
 
 
+<!-- POPUP DE COMENTÁRIOS -->
+
+<div
+id="popupComentarios"
+onclick="fecharPopupFora(event)"
+>
+
+<div id="caixaComentarios">
+
+<h3>
+Comentários
+</h3>
+
+<div id="listaComentarios">
+</div>
+
+<textarea
+id="textoComentario"
+maxlength="1000"
+placeholder="Escreva seu comentário..."
+></textarea>
+
+<div class="botoes-popup">
+
+<button onclick="enviarComentario()">
+Enviar
+</button>
+
+<button
+class="botao-fechar"
+onclick="fecharComentarios()"
+>
+Fechar
+</button>
+
+</div>
+
+</div>
+
+</div>
 
 
 <script>
 
 
-async function carregarFeed(){
+let videoComentarioAtual = null;
 
+
+/* CARREGAR FEED */
+
+async function carregarFeed(){
 
 const feed=document.getElementById("feedVideos");
 
-
 try{
-
 
 const resposta=await fetch("/api/videos");
 
 const videos=await resposta.json();
 
-
-
 feed.innerHTML="";
-
-
 
 videos.reverse().forEach(video=>{
 
+const curtidas=video.curtidas || 0;
+
+const comentarios=video.comentarios_count || 0;
+
+const chaveCurtida="nexus_curtiu_"+video.id;
+
+const jaCurtiu=
+localStorage.getItem(chaveCurtida)==="1";
 
 feed.innerHTML+=`
 
-<div class="card">
-
+<div class="card" data-video-id="${video.id}">
 
 <video controls playsinline>
 
@@ -215,53 +403,67 @@ feed.innerHTML+=`
 
 </video>
 
-
 <div class="info">
 
 <h3>
 ${video.titulo || "Vídeo Nexus"}
 </h3>
 
-
 <button onclick="telaCheia(this)">
 Tela cheia
 </button>
 
+<div class="acoes">
+
+<button
+class="botao-acao ${jaCurtiu ? "curtido" : ""}"
+onclick="alternarCurtida('${video.id}',this)"
+>
+❤️ Curtir <span>${curtidas}</span>
+</button>
+
+<button
+class="botao-acao"
+onclick="abrirComentarios('${video.id}')"
+>
+💬 Comentar <span>${comentarios}</span>
+</button>
+
+<button
+class="botao-acao"
+onclick="compartilharVideo('${video.url}')"
+>
+🔗 Compartilhar
+</button>
 
 </div>
 
-
 </div>
 
+</div>
 
 `;
 
-
 });
-
-
 
 }catch(e){
 
-
 feed.innerHTML="Erro ao carregar vídeos";
 
+console.error(e);
+
+}
 
 }
 
 
-}
-
-
-
+/* TELA CHEIA */
 
 function telaCheia(botao){
-
 
 const video=
 botao.closest(".card")
 .querySelector("video");
-
 
 if(video.requestFullscreen){
 
@@ -269,37 +471,351 @@ video.requestFullscreen();
 
 }
 
+}
+
+
+/* CURTIR / DESCURTIR */
+
+async function alternarCurtida(id,botao){
+
+const chave="nexus_curtiu_"+id;
+
+const jaCurtiu=
+localStorage.getItem(chave)==="1";
+
+const acao=
+jaCurtiu ? "descurtir" : "curtir";
+
+try{
+
+const resposta=await fetch(
+"/api/videos/"+id+"/curtir",
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+acao
+})
+}
+);
+
+const resultado=await resposta.json();
+
+if(!resposta.ok){
+
+alert(resultado.erro || "Erro ao curtir");
+
+return;
+
+}
+
+botao.querySelector("span").textContent=
+resultado.curtidas;
+
+if(acao==="curtir"){
+
+localStorage.setItem(chave,"1");
+
+botao.classList.add("curtido");
+
+}else{
+
+localStorage.removeItem(chave);
+
+botao.classList.remove("curtido");
+
+}
+
+}catch(e){
+
+alert("Falha ao alterar curtida");
+
+}
 
 }
 
 
+/* COMPARTILHAR */
 
+async function compartilharVideo(url){
+
+try{
+
+if(navigator.share){
+
+await navigator.share({
+
+title:"Nexus Feed",
+
+text:"Confira este vídeo no Nexus Feed",
+
+url:window.location.origin+url
+
+});
+
+}else{
+
+const link=
+window.location.origin+url;
+
+await navigator.clipboard.writeText(link);
+
+alert("Link copiado!");
+
+}
+
+}catch(e){
+
+if(e.name!=="AbortError"){
+
+try{
+
+const link=
+window.location.origin+url;
+
+await navigator.clipboard.writeText(link);
+
+alert("Link copiado!");
+
+}catch(err){
+
+prompt(
+"Copie o link do vídeo:",
+window.location.origin+url
+);
+
+}
+
+}
+
+}
+
+}
+
+
+/* ABRIR POPUP */
+
+async function abrirComentarios(id){
+
+videoComentarioAtual=id;
+
+document.getElementById(
+"popupComentarios"
+).style.display="flex";
+
+document.getElementById(
+"textoComentario"
+).value="";
+
+await carregarComentarios(id);
+
+setTimeout(()=>{
+
+document.getElementById(
+"textoComentario"
+).focus();
+
+},100);
+
+}
+
+
+/* FECHAR POPUP */
+
+function fecharComentarios(){
+
+document.getElementById(
+"popupComentarios"
+).style.display="none";
+
+videoComentarioAtual=null;
+
+}
+
+
+function fecharPopupFora(event){
+
+if(event.target.id==="popupComentarios"){
+
+fecharComentarios();
+
+}
+
+}
+
+
+/* CARREGAR COMENTÁRIOS */
+
+async function carregarComentarios(id){
+
+const lista=
+document.getElementById("listaComentarios");
+
+lista.innerHTML=
+"Carregando comentários...";
+
+try{
+
+const resposta=await fetch(
+"/api/videos/"+id+"/comentarios"
+);
+
+const comentarios=
+await resposta.json();
+
+lista.innerHTML="";
+
+if(!comentarios.length){
+
+lista.innerHTML=
+"<p>Nenhum comentário ainda.</p>";
+
+return;
+
+}
+
+comentarios.reverse().forEach(comentario=>{
+
+const div=
+document.createElement("div");
+
+div.className="comentario";
+
+const texto=
+document.createElement("div");
+
+texto.textContent=
+comentario.texto;
+
+const data=
+document.createElement("div");
+
+data.className="data-comentario";
+
+data.textContent=
+new Date(comentario.data)
+.toLocaleString("pt-BR");
+
+div.appendChild(texto);
+
+div.appendChild(data);
+
+lista.appendChild(div);
+
+});
+
+}catch(e){
+
+lista.innerHTML=
+"Erro ao carregar comentários.";
+
+}
+
+}
+
+
+/* ENVIAR COMENTÁRIO */
+
+async function enviarComentario(){
+
+if(!videoComentarioAtual){
+
+return;
+
+}
+
+const campo=
+document.getElementById("textoComentario");
+
+const texto=
+campo.value.trim();
+
+if(!texto){
+
+alert("Digite um comentário");
+
+campo.focus();
+
+return;
+
+}
+
+try{
+
+const resposta=await fetch(
+"/api/videos/"+videoComentarioAtual+"/comentarios",
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+texto
+})
+}
+);
+
+const resultado=
+await resposta.json();
+
+if(!resposta.ok){
+
+alert(
+resultado.erro ||
+"Erro ao enviar comentário"
+);
+
+return;
+
+}
+
+campo.value="";
+
+await carregarComentarios(
+videoComentarioAtual
+);
+
+carregarFeed();
+
+}catch(e){
+
+alert("Falha ao enviar comentário");
+
+}
+
+}
+
+
+/* PAINEL */
 
 function abrirPainel(){
 
-document.getElementById("painel").style.display="block";
+document.getElementById(
+"painel"
+).style.display="block";
 
 carregarLista();
 
 }
 
 
-
 function fecharPainel(){
 
-document.getElementById("painel").style.display="none";
+document.getElementById(
+"painel"
+).style.display="none";
 
 }
 
 
-
+/* UPLOAD */
 
 async function enviarVideo(){
 
-
 const arquivo=
 document.getElementById("arquivo").files[0];
-
 
 if(!arquivo){
 
@@ -309,147 +825,108 @@ return;
 
 }
 
-
-
 const dados=new FormData();
-
 
 dados.append("video",arquivo);
 
-
-
 try{
 
-
-const resposta=
-await fetch("/api/videos/upload",{
-
+const resposta=await fetch(
+"/api/videos/upload",
+{
 method:"POST",
-
 body:dados
-
-});
-
-
+}
+);
 
 const resultado=
 await resposta.json();
-
-
 
 if(resultado.sucesso){
 
 alert("Upload concluído");
 
-document.getElementById("arquivo").value="";
+document.getElementById(
+"arquivo"
+).value="";
 
 carregarFeed();
 
 carregarLista();
 
-
 }else{
 
-
-alert(resultado.erro || "Erro no upload");
-
+alert(
+resultado.erro ||
+"Erro no upload"
+);
 
 }
-
-
 
 }catch(e){
 
-
 alert("Falha no envio");
 
+}
 
 }
 
 
-
-}
-
-
-
-
+/* LISTA */
 
 async function carregarLista(){
 
-
-const lista=document.getElementById("lista");
-
+const lista=
+document.getElementById("lista");
 
 try{
-
 
 const resposta=
 await fetch("/api/videos");
 
-
 const videos=
 await resposta.json();
 
-
-
 lista.innerHTML="";
 
-
-
 videos.forEach(video=>{
-
 
 lista.innerHTML+=`
 
 <div class="item">
 
-
 <strong>
 ${video.titulo || "Vídeo"}
 </strong>
 
-
 <br>
-
 
 <small>
 Cloudinary ativo
 </small>
 
-
 <br>
 
-
-<button onclick="abrirVideo('${video.url}')">
-
+<button
+onclick="abrirVideo('${video.url}')"
+>
 Abrir vídeo
-
 </button>
-
 
 </div>
 
-
 `;
-
 
 });
 
-
-
 }catch(e){
 
-
-lista.innerHTML="Erro na lista";
-
-
-}
-
-
+lista.innerHTML=
+"Erro na lista";
 
 }
 
-
+}
 
 
 function abrirVideo(url){
@@ -459,13 +936,10 @@ window.open(url,"_blank");
 }
 
 
-
-
 carregarFeed();
-
 
 </script>
 
-
 </body>
+
 </html>
