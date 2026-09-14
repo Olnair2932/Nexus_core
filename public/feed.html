@@ -1011,6 +1011,15 @@ ${visibilidade === "privado" ? "selected" : ""}
 </option>
 
 </select>
+
+<br><br>
+
+<button
+type="button"
+onclick="excluirVideo('${video.id}')"
+>
+🗑️ Excluir vídeo
+</button>
 `
 :
 ""
@@ -1030,6 +1039,71 @@ lista.innerHTML=
 }
 
 }
+
+async function excluirVideo(id){
+
+if(!user){
+
+alert("Faça login para excluir vídeos");
+
+return;
+
+}
+
+const confirmar =
+confirm("Tem certeza que deseja excluir este vídeo?");
+
+if(!confirmar){
+
+return;
+
+}
+
+try{
+
+const token =
+await user.getIdToken();
+
+const resposta =
+await fetch(
+"/api/videos/" + id,
+{
+method:"DELETE",
+headers:{
+"Authorization":"Bearer " + token
+}
+}
+);
+
+const resultado =
+await resposta.json();
+
+if(!resposta.ok){
+
+alert(
+resultado.erro ||
+"Não foi possível excluir o vídeo"
+);
+
+return;
+
+}
+
+alert("Vídeo excluído com sucesso");
+
+await carregarFeed();
+await carregarLista();
+
+}catch(e){
+
+console.error(e);
+
+alert("Erro ao excluir vídeo");
+
+}
+
+}
+
 
 async function alterarVisibilidade(id, visibilidade){
 
