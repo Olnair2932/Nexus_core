@@ -1,5 +1,6 @@
 const { initializeApp, cert, getApps } = require("firebase-admin/app");
 const { getDatabase } = require("firebase-admin/database");
+const { getAuth } = require("firebase-admin/auth");
 
 if (getApps().length === 0) {
 
@@ -19,4 +20,7 @@ if (getApps().length === 0) {
 
 }
 
-module.exports = getDatabase();
+module.exports = {
+    database: getDatabase(),
+    auth: getAuth()
+};

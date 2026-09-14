@@ -303,6 +303,13 @@ accept="video/*"
 
 <br><br>
 
+<label>Visibilidade:</label>
+<select id="visibilidadeVideo">
+<option value="publico">🌎 Público</option>
+<option value="privado">🔒 Privado</option>
+</select>
+
+
 <button onclick="enviarVideo()">
 Enviar vídeo
 </button>
@@ -390,6 +397,9 @@ auth.onAuthStateChanged(u => {
     } else {
         console.log("NEXUS FEED sem usuário autenticado");
     }
+
+    carregarFeed();
+    carregarLista();
 });
 
 let videoComentarioAtual = null;
@@ -856,12 +866,27 @@ const dados=new FormData();
 
 dados.append("video",arquivo);
 
+const visibilidade =
+document.getElementById("visibilidadeVideo").value;
+
+dados.append("visibilidade",visibilidade);
+
+const token = user ? await user.getIdToken() : null;
+
+if(!token){
+alert("Faça login para enviar vídeos");
+return;
+}
+
 try{
 
 const resposta=await fetch(
 "/api/videos/upload",
 {
 method:"POST",
+headers:{
+Authorization:"Bearer " + token
+},
 body:dados
 }
 );
@@ -918,6 +943,12 @@ lista.innerHTML="";
 
 videos.forEach(video=>{
 
+const souDono =
+user && video.uid === user.uid;
+
+const visibilidade =
+video.visibilidade || "publico";
+
 lista.innerHTML+=`
 
 <div class="item">
@@ -929,7 +960,7 @@ ${video.titulo || "Vídeo"}
 <br>
 
 <small>
-Cloudinary ativo
+${visibilidade === "privado" ? "🔒 Privado" : "🌎 Público"}
 </small>
 
 <br>
@@ -939,6 +970,39 @@ onclick="abrirVideo('${video.url}')"
 >
 Abrir vídeo
 </button>
+
+${
+souDono
+?
+`
+<br><br>
+
+<label>
+Visibilidade:
+</label>
+
+<select
+onchange="alterarVisibilidade('${video.id}', this.value)"
+>
+<option
+value="publico"
+${visibilidade === "publico" ? "selected" : ""}
+>
+🌎 Público
+</option>
+
+<option
+value="privado"
+${visibilidade === "privado" ? "selected" : ""}
+>
+🔒 Privado
+</option>
+
+</select>
+`
+:
+""
+}
 
 </div>
 
@@ -955,15 +1019,68 @@ lista.innerHTML=
 
 }
 
+async function alterarVisibilidade(id, visibilidade){
+
+if(!user){
+
+alert("Faça login para alterar a visibilidade");
+
+return;
+
+}
+
+try{
+
+const token =
+await user.getIdToken();
+
+const resposta =
+await fetch(
+"/api/videos/" + id + "/visibilidade",
+{
+method:"PATCH",
+headers:{
+"Content-Type":"application/json",
+"Authorization":"Bearer " + token
+},
+body:JSON.stringify({
+visibilidade
+})
+}
+);
+
+const resultado =
+await resposta.json();
+
+if(!resposta.ok){
+
+alert(
+resultado.erro ||
+"Não foi possível alterar a visibilidade"
+);
+
+return;
+
+}
+
+carregarFeed();
+carregarLista();
+
+}catch(e){
+
+alert(
+"Erro ao alterar a visibilidade"
+);
+
+}
+
+}
 
 function abrirVideo(url){
 
 window.open(url,"_blank");
 
 }
-
-
-carregarFeed();
 
 </script>
 
