@@ -193,7 +193,7 @@ margin-top:8px;
 
     <main>
         <div class="tabs">
-            <button id="tab-lib" class="tab-btn active" onclick="switchTab('lib')">BIBLIOTECA RENDER</button>
+            <button id="tab-lib" class="tab-btn active" onclick="switchTab('lib')">🎬 LINKS DO YOUTUBE</button>
             <button id="tab-fav" class="tab-btn" onclick="switchTab('fav')">MINHA PLAYLIST (☁️)</button>
 <button id="tab-cloud" class="tab-btn" onclick="switchTab('cloud')">CLOUDINARY ☁️</button>
 
@@ -271,6 +271,7 @@ margin-top:8px;
             if (u) {
                 btn.innerText = "SAIR";
                 img.src = u.photoURL; img.style.display = "block";
+                if (currentTab === 'lib') loadLibrary();
             }
         });
 
@@ -307,21 +308,57 @@ function atualizarDados(){
 
 
         async function loadLibrary() {
-            try {
-                const r = await fetch('/api/arquivos');
-                const files = await r.json();
-                document.getElementById('item-list').innerHTML = files.map(f => `
-                    <div class="list-item">
-                        <span onclick="copyCmd('${f}')">${f}</span>
-                        <div class="item-actions">
-                            <span class="btn-star" onclick="addToDB('${f}')">★</span>
-                        </div>
-                    </div>
-                `).join('');
-            } catch (e) { document.getElementById('item-list').innerText = "Erro ao ler Render."; }
+    if (!user) {
+        document.getElementById('item-list').innerHTML =
+            "<div style='text-align:center; padding:20px;'>Faça login para ver seus links do YouTube.</div>";
+        return;
+    }
+
+    db.ref(`playlists/${user.uid}`).on('value', snapshot => {
+        const data = snapshot.val();
+
+        if (!data) {
+            document.getElementById('item-list').innerHTML =
+                "<div style='text-align:center; padding:20px;'>Nenhum link do YouTube salvo.</div>";
+            return;
         }
 
-        
+        const links = Object.values(data).filter(item =>
+            item &&
+            item.fonte === "youtube" &&
+            item.url
+        );
+
+        if (!links.length) {
+            document.getElementById('item-list').innerHTML =
+                "<div style='text-align:center; padding:20px;'>Nenhum link do YouTube salvo.</div>";
+            return;
+        }
+
+        document.getElementById('item-list').innerHTML = links.map(item => `
+            <div class="list-item">
+                <div style="display:flex; flex-direction:column; gap:5px; min-width:0; flex:1;">
+                    <span style="font-weight:bold;">${item.name || item.titulo || "Vídeo do YouTube"}</span>
+                    <span style="font-size:12px; opacity:0.75; word-break:break-all;">${item.url}</span>
+                </div>
+                <div class="item-actions">
+                    <button class="btn-star" onclick="copiarLinkYoutube('${item.url.replace(/'/g, "\\'")}')">📋</button>
+                </div>
+            </div>
+        `).join('');
+    });
+}
+
+async function copiarLinkYoutube(url) {
+    try {
+        await navigator.clipboard.writeText(url);
+        alert("Link do YouTube copiado!");
+    } catch (e) {
+        console.error(e);
+        alert("Não foi possível copiar o link.");
+    }
+}
+
 async function loadCloudinarySimple() {
     console.log("Cloudinary removido da tela principal. Use o NEXUS FEED.");
 }
