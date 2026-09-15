@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const { database } = require("./firebase_admin");
-const { ref, get } = require("firebase-admin/database");
+const db = database;
 
 const FILE = path.join(
     __dirname,
@@ -257,7 +257,7 @@ async function procurarMemoria(texto, uid) {
         try {
 
             const snap =
-                await get(ref(database, `playlists/${uid}`));
+                await db.ref(`playlists/${uid}`).once("value");
 
             const playlist =
                 snap.val();
