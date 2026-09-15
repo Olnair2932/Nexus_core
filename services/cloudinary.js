@@ -37,6 +37,34 @@ function uploadVideo(arquivo) {
 }
 
 
+async function deleteVideo(publicId) {
+
+    if (!publicId) {
+        throw new Error("public_id do vídeo não informado");
+    }
+
+    const resultado = await cloudinary.uploader.destroy(
+        publicId,
+        {
+            resource_type: "video"
+        }
+    );
+
+    if (
+        resultado.result !== "ok" &&
+        resultado.result !== "not found"
+    ) {
+        throw new Error(
+            "Falha ao excluir vídeo do Cloudinary: " +
+            resultado.result
+        );
+    }
+
+    return resultado;
+}
+
+
 module.exports = {
-    uploadVideo
+    uploadVideo,
+    deleteVideo
 };
