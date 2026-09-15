@@ -277,4 +277,58 @@ const resultado =
 
 
 
+router.get("/youtube/titulo/:videoId", async (req, res) => {
+    const videoId = String(req.params.videoId || "").trim();
+    const chave = process.env.YOUTUBE_API_KEY;
+
+    if (!/^[A-Za-z0-9_-]{11}$/.test(videoId)) {
+        return res.status(400).json({
+            erro: "videoId do YouTube inválido"
+        });
+    }
+
+    if (!chave) {
+        return res.status(500).json({
+            erro: "YouTube API não configurada"
+        });
+    }
+
+    try {
+        const axios = require("axios");
+
+        const resposta = await axios.get(
+            "https://www.googleapis.com/youtube/v3/videos",
+            {
+                params: {
+                    key: chave,
+                    part: "snippet",
+                    id: videoId
+                },
+                timeout: 10000
+            }
+        );
+
+        const item = resposta.data?.items?.[0];
+
+        if (!item) {
+            return res.status(404).json({
+                erro: "Vídeo do YouTube não encontrado"
+            });
+        }
+
+        return res.json({
+            titulo: item.snippet?.title || "Vídeo YouTube",
+            canal: item.snippet?.channelTitle || "Desconhecido",
+            videoId
+        });
+
+    } catch (erro) {
+        console.log("YouTube título erro:", erro.message);
+
+        return res.status(500).json({
+            erro: "Erro ao consultar o YouTube"
+        });
+    }
+});
+
 module.exports = router;

@@ -351,11 +351,35 @@ function atualizarDados(){
 
 async function copiarLinkYoutube(url) {
     try {
-        await navigator.clipboard.writeText(url);
-        alert("Link do YouTube copiado!");
+        const link = String(url || "").match(
+            /(?:youtu\.be\/|youtube\.com\/watch\?v=|youtube\.com\/shorts\/)([A-Za-z0-9_-]{11})/
+        );
+
+        if (!link) {
+            alert("Link do YouTube inválido.");
+            return;
+        }
+
+        const videoId = link[1];
+
+        const resposta = await fetch(
+            "/api/youtube/titulo/" + videoId
+        );
+
+        const resultado = await resposta.json();
+
+        if (!resposta.ok || !resultado.titulo) {
+            alert(resultado.erro || "Não foi possível encontrar o título.");
+            return;
+        }
+
+        await navigator.clipboard.writeText(resultado.titulo);
+
+        alert("Nome da música copiado!");
+
     } catch (e) {
         console.error(e);
-        alert("Não foi possível copiar o link.");
+        alert("Não foi possível copiar o nome da música.");
     }
 }
 
